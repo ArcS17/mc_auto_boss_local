@@ -59,8 +59,8 @@ if %ERRORLEVEL% NEQ 0 (
 
 rem 进入当前文件夹
 cd /d %~dp0
-echo 当前目录：%CD%
-echo 运行 main.py
+echo 当前目录  %CD%
+echo 开始运行  main.py
 echo.
 echo -------------------------------------------鸣潮启动!!!-------------------------------------------------
 python .\background\main.py
