@@ -17,6 +17,7 @@ from echo import EchoModel
 
 class Config(BaseModel):
     ModelName: Optional[str] = Field("yolo", title="模型的名称,默认是yolo.onnx")
+    SwitchModules: bool = Field(True, title="是否开启声骸自动切换，默认开启")
     MaxFightTime: int = Field(120, title="最大战斗时间")
     MaxIdleTime: int = Field(10, title="最大空闲时间", ge=5)
     TargetBoss: list[str] = Field([], title="目标关键字")
@@ -39,7 +40,7 @@ class Config(BaseModel):
     )
     DungeonWeeklyBossWaitTime: int = Field(0, title="周本(副本)boss额外等待时间")
     DungeonWeeklyBossLevel: int = Field(40, title="周本(副本)boss等级")
-    SearchEchoes: bool = Field(False, title="是否搜索声骸")
+    
     OcrInterval: float = Field(0.5, title="OCR间隔时间", ge=0)
     SearchDreamlessEchoes: bool = Field(True, title="是否搜索无妄者")
     CharacterHeal: bool = Field(True, title="是否判断角色是否阵亡")

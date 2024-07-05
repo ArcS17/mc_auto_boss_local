@@ -150,7 +150,7 @@ def set_console_title(title: str):
 set_console_title(f"鸣潮自动工具ver {version.__version__}   ---ArcS17 Branch")
 
 
-def run(task: Task, e: Event):
+def run(task: Task, e: event):
     """
     运行
     :return:
