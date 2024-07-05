@@ -147,10 +147,10 @@ def set_console_title(title: str):
     ctypes.windll.kernel32.SetConsoleTitleW(title)
 
 
-set_console_title(f"鸣潮自动工具ver {version.__version__}   ---ArcS17 Branch")
+set_console_title(f"鸣潮自动工具ver {version.__version__}   ---此软件为免费的开源软件 谨防倒卖！")
 
 
-def run(task: Task, e: event):
+def run(task: Task, e: Event):
     """
     运行
     :return:
@@ -186,7 +186,7 @@ def on_press(key):
         logger("启动融合脚本")
         try:
             input(
-                "启动融合脚本之前请确保已锁定现有的有用声骸，并确认使用已适配分辨率：\n  1920*1080分辨率1.0缩放\n  1600*900分辨率1.0缩放\n  1280*720分辨率1.5缩放\n  1280*720分辨率1.0缩放\n  回车键确认 Enter..."
+                "启动融合脚本之前请确保已锁定现有的有用声骸，并确认使用已适配分辨率：\n  1920*1080分辨率1.0缩放\n  1600*900分辨率1.0缩放\n  1280*720分辨率1.5缩放\n 1280*720分辨率1.0缩放"
             )
         except Exception:
             pass
@@ -267,15 +267,15 @@ if __name__ == "__main__":
     logger("应用重启进程启动")
     logger(f"version: {version.__version__}")
     logger("鼠标重置进程启动")
-    # print(
-    #     "\n --------------------------------------------------------------"
-    #     "\n     注意：此脚本为免费的开源软件，如果你是通过购买获得的，那么你受骗了！\n "
-    #     "--------------------------------------------------------------\n"
-    # )
-    # print("请确认已经配置好了config.yaml文件\n")
-    print("\n 使用说明：\n   F5  启动脚本\n   F6  合成声骸\n   F7  暂停运行\n   F8  锁定声骸\n   F12 停止运行")
+    print(
+        "\n --------------------------------------------------------------"
+        "\n     注意：此脚本为免费的开源软件，如果你是通过购买获得的，那么你受骗了！\n "
+        "--------------------------------------------------------------\n"
+    )
+    print("请确认已经配置好了config.yaml文件\n")
+    print("使用说明：\n   F5  启动脚本\n   F6  合成声骸\n   F7  暂停运行\n   F8  锁定声骸\n   F12 停止运行")
     logger("开始运行")
     run_cmd_tasks_async()
     with Listener(on_press=on_press) as listener:
         listener.join()
-    print("  结束运行")
+    print("结束运行")

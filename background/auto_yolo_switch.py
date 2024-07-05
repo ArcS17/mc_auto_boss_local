@@ -20,48 +20,45 @@ heart_bossName = "无冠者之像·心脏"  # 无冠者之像·心脏
 # 根据boss名称动态的切换模型，
 def model_boss_yolo(bossName: str):
     # 没有指定使用该模型，但是该模型是存在的
-    if config.SwitchModules: # 允许用户自行选择是否开启模型自动切换
-        if (
-            bossName == jue_bossName or bossName == jue_bossName_as
-        ) and config.ModelName != jue_ModelName:  # 角，并且没有切换模型,该方法的调用位于schema.py 282行
-            # todo...可以判断模型是否存在，如果不存在则使用默认的模型yolo
-            if is_in_models_folder(jue_ModelName + ModelName_ext):
-                logger("使用【角】的YOLO模型识别")
-                config.ModelName = jue_ModelName
-            else:
-                user_default_model()  # 角模型不存在，使用默认的yolo模型
+    if (
+        bossName == jue_bossName or bossName == jue_bossName_as
+    ) and config.ModelName != jue_ModelName:  # 角，并且没有切换模型,该方法的调用位于schema.py 282行
+        # todo...可以判断模型是否存在，如果不存在则使用默认的模型yolo
+        if is_in_models_folder(jue_ModelName + ModelName_ext):
+            logger("使用【角】的YOLO模型识别")
+            config.ModelName = jue_ModelName
+        else:
+            user_default_model()  # 角模型不存在，使用默认的yolo模型
 
-        elif (
-            bossName == heart_bossName and config.ModelName != heart_ModelName
-        ):  # 无冠者之像·心脏，并且没有切换模型,该方法的调用位于schema.py 282行
-            if is_in_models_folder(heart_ModelName + ModelName_ext):
-                logger("使用【无冠者之像·心脏】的YOLO模型识别")
-                config.ModelName = heart_ModelName
-            else:
-                user_default_model()  # 无冠者之像·心脏模型不存在，使用默认的yolo模型
+    elif (
+        bossName == heart_bossName and config.ModelName != heart_ModelName
+    ):  # 无冠者之像·心脏，并且没有切换模型,该方法的调用位于schema.py 282行
+        if is_in_models_folder(heart_ModelName + ModelName_ext):
+            logger("使用【无冠者之像·心脏】的YOLO模型识别")
+            config.ModelName = heart_ModelName
+        else:
+            user_default_model()  # 无冠者之像·心脏模型不存在，使用默认的yolo模型
 
-        #  todo...待训练其他的BOSS
+    #  todo...待训练其他的BOSS
 
-        # utils.py 222行调用当前方法
-        elif (
-            bossName == "鸣钟之龟"
-            or bossName == "无冠者"
-            or bossName == "朔雷之鳞"
-            or bossName == "云闪之鳞"
-            or bossName == "燎照之骑"
-            or bossName == "飞廉之猩"
-            or bossName == "袁声鸷"
-            or bossName == "无常凶鹭"
-            or bossName == "辉萤军势"
-            or bossName == "聚械机偶"
-        ) and config.ModelName != defaultModelName:
-            user_default_model()  # 其他Boss，使用默认的yolo模型
-    else:
-        user_default_model()
+    # utils.py 222行调用当前方法
+    elif (
+        bossName == "鸣钟之龟"
+        or bossName == "无冠者"
+        or bossName == "朔雷之鳞"
+        or bossName == "云闪之鳞"
+        or bossName == "燎照之骑"
+        or bossName == "飞廉之猩"
+        or bossName == "袁声鸷"
+        or bossName == "无常凶鹭"
+        or bossName == "辉萤军势"
+        or bossName == "聚械机偶"
+    ) and config.ModelName != defaultModelName:
+        user_default_model()  # 其他Boss，使用默认的yolo模型
 
 
 def user_default_model():
-    logger(default_yolo_logger)  # 当模型文件不存在或切换功能未开启的时，默认使用yolo模型进行识别
+    logger(default_yolo_logger)  # 当模型文件不存在的时候，默认使用yolo模型进行识别
     config.ModelName = defaultModelName
 
 

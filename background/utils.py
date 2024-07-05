@@ -203,7 +203,7 @@ def leaving_battle():
 
 def forward():
     control.key_press("w")
-    time.sleep(0.2)
+    time.sleep(0.1)
     control.key_release("w")
 
 
@@ -544,8 +544,8 @@ def absorption_action():
         return
     start_time = datetime.now()  # 开始时间
     absorption_max_time = (
-        config.MaxIdleTime / 2 if config.MaxIdleTime / 2 > 18 else 18
-    )  # 最大吸收时间为最大空闲时间的一半或者18秒-取最大值
+        config.MaxIdleTime / 2 if config.MaxIdleTime / 2 > 10 else 10
+    )  # 最大吸收时间为最大空闲时间的一半或者10秒-取最大值
     if absorption_max_time <= 10 and (info.inJue or info.inDreamless):
         absorption_max_time = 20
     last_x = None
@@ -565,16 +565,12 @@ def absorption_action():
         if x < center_x - floating:
             logger("发现声骸 向左移动")
             control.tap("a")
-            control.tap("a")
         elif x > center_x + floating:
             logger("发现声骸 向右移动")
             control.tap("d")
-            control.tap("d")
         else:
             logger("发现声骸 向前移动")
-            for i in range(5):
-                forward()
-                time.sleep(0.1)
+            control.tap("w")
         if absorption_and_receive_rewards({}):
             break
 
@@ -680,7 +676,7 @@ def check_heal():
             if not wait_text_designated_area("复苏", timeout=3, region=region):
                 logger(f"{info.roleIndex}号角色无需复苏")
                 info.needHeal = False
-                time.sleep(0.5)
+                time.sleep(1)
             else:
                 logger(f"{info.roleIndex}号角色需要复苏")
                 info.needHeal = True
@@ -868,8 +864,8 @@ def boss_wait(bossName):
         logger("无妄者需要等待3秒开始战斗！", "DEBUG")
         time.sleep(3)
     elif contains_any_combinations(bossName, keywords_jue, min_chars=1):
-        logger("岁主需要等待3秒开始战斗！", "DEBUG")
-        time.sleep(0.5)
+        logger("角需要等待3秒开始战斗！", "DEBUG")
+        time.sleep(3)
     else:
         logger("当前BOSS可直接开始战斗！", "DEBUG")
 
