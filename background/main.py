@@ -147,7 +147,7 @@ def set_console_title(title: str):
     ctypes.windll.kernel32.SetConsoleTitleW(title)
 
 
-set_console_title(f"鸣潮自动工具ver {version.__version__}   ---此软件为免费的开源软件 谨防倒卖！")
+set_console_title(f"鸣潮自动工具ver {version.__version__}   ---ArcS17 Branch")
 
 
 def run(task: Task, e: Event):
@@ -267,12 +267,12 @@ if __name__ == "__main__":
     logger("应用重启进程启动")
     logger(f"version: {version.__version__}")
     logger("鼠标重置进程启动")
-    print(
-        "\n --------------------------------------------------------------"
-        "\n     注意：此脚本为免费的开源软件，如果你是通过购买获得的，那么你受骗了！\n "
-        "--------------------------------------------------------------\n"
-    )
-    print("请确认已经配置好了config.yaml文件\n")
+    # print(
+    #     "\n --------------------------------------------------------------"
+    #     "\n     注意：此脚本为免费的开源软件，如果你是通过购买获得的，那么你受骗了！\n "
+    #     "--------------------------------------------------------------\n"
+    # )
+    # print("请确认已经配置好了config.yaml文件\n")
     print("使用说明：\n   F5  启动脚本\n   F6  合成声骸\n   F7  暂停运行\n   F8  锁定声骸\n   F12 停止运行")
     logger("开始运行")
     run_cmd_tasks_async()

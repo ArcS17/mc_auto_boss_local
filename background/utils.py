@@ -203,7 +203,7 @@ def leaving_battle():
 
 def forward():
     control.key_press("w")
-    time.sleep(0.1)
+    time.sleep(0.2)
     control.key_release("w")
 
 
@@ -565,12 +565,16 @@ def absorption_action():
         if x < center_x - floating:
             logger("发现声骸 向左移动")
             control.tap("a")
+            control.tap("d")
         elif x > center_x + floating:
             logger("发现声骸 向右移动")
             control.tap("d")
+            control.tap("d")
         else:
             logger("发现声骸 向前移动")
-            control.tap("w")
+            for i in range(10):
+                forward()
+                time.sleep(0.1)
         if absorption_and_receive_rewards({}):
             break
 
@@ -676,7 +680,7 @@ def check_heal():
             if not wait_text_designated_area("复苏", timeout=3, region=region):
                 logger(f"{info.roleIndex}号角色无需复苏")
                 info.needHeal = False
-                time.sleep(1)
+                time.sleep(0.5)
             else:
                 logger(f"{info.roleIndex}号角色需要复苏")
                 info.needHeal = True
