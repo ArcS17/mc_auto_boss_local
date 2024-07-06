@@ -515,8 +515,9 @@ def wait_home(timeout=120):
 
 
 def turn_to_search() -> int | None:
+    time.sleep(3) # 增加战斗结束后延时
     x = None
-    for i in range(4):
+    for i in range(5):
         if i == 0:
             control.activate()
             control.mouse_middle()  # 重置视角
@@ -525,7 +526,7 @@ def turn_to_search() -> int | None:
         x = search_echoes(img)
         if x is not None:
             break
-        if i == 3:  # 如果尝试了4次都未发现声骸，直接返回
+        if i == 4:  # 如果尝试了4次都未发现声骸，直接返回
             return
         logger("未发现声骸,转动视角")
         control.tap("a")
@@ -544,8 +545,8 @@ def absorption_action():
         return
     start_time = datetime.now()  # 开始时间
     absorption_max_time = (
-        config.MaxIdleTime / 2 if config.MaxIdleTime / 2 > 10 else 10
-    )  # 最大吸收时间为最大空闲时间的一半或者10秒-取最大值
+        config.MaxIdleTime / 2 if config.MaxIdleTime / 2 > 10 else 18
+    )  # 最大吸收时间为最大空闲时间的一半或者18秒-取最大值
     if absorption_max_time <= 10 and (info.inJue or info.inDreamless):
         absorption_max_time = 20
     last_x = None
@@ -570,7 +571,9 @@ def absorption_action():
             control.tap("d")
         else:
             logger("发现声骸 向前移动")
-            control.tap("w")
+            for i in range(4):
+                forward()
+                time.sleep(0.05)
         if absorption_and_receive_rewards({}):
             break
 

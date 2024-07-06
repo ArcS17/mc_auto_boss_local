@@ -25,7 +25,7 @@ def model_boss_yolo(bossName: str):
     ) and config.ModelName != jue_ModelName:  # 角，并且没有切换模型,该方法的调用位于schema.py 282行
         # todo...可以判断模型是否存在，如果不存在则使用默认的模型yolo
         if is_in_models_folder(jue_ModelName + ModelName_ext):
-            logger("使用【角】的YOLO模型识别")
+            logger("使用YOLO模型[角]")
             config.ModelName = jue_ModelName
         else:
             user_default_model()  # 角模型不存在，使用默认的yolo模型
@@ -34,7 +34,7 @@ def model_boss_yolo(bossName: str):
         bossName == heart_bossName and config.ModelName != heart_ModelName
     ):  # 无冠者之像·心脏，并且没有切换模型,该方法的调用位于schema.py 282行
         if is_in_models_folder(heart_ModelName + ModelName_ext):
-            logger("使用【无冠者之像·心脏】的YOLO模型识别")
+            logger("使用YOLO模型[无妄者]")
             config.ModelName = heart_ModelName
         else:
             user_default_model()  # 无冠者之像·心脏模型不存在，使用默认的yolo模型
