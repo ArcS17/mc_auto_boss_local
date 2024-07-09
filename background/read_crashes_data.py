@@ -85,6 +85,7 @@ def read_crashes_datas():
     is_crashes = is_app_crashes()
     if is_crashes:  # 游戏发生了崩溃-读取文本-True
         battle_count, absorb_count, heal_count = get_crashes_value()  # 读取崩溃后日志中保存的数据，作为日志输出
+        print(f"\n   崩溃前战斗次数为：{battle_count}，吸收次数为：{absorb_count}，治疗次数为：{heal_count}")
         return battle_count, absorb_count, heal_count
         # info.fightCount = battle_count # 战斗次数
         # info.absorptionCount = absorb_count # 吸收次数

@@ -29,18 +29,18 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 hwnds = win32gui.FindWindow("UnrealWindow", "鸣潮")
 app_path = config.AppPath
-IMAGE_NAME_UE4_CRASH = os.path.join(config.project_root, "message.png") # 崩溃的图片，在项目根目录
+# IMAGE_NAME_UE4_CRASH = os.path.join(config.project_root, "message.png") # 崩溃的图片，在项目根目录
 
 # 关闭UE4崩溃弹窗
-def find_and_press_enter():
-    while True:
-        try:
-            x, y = pyautogui.locateCenterOnScreen(IMAGE_NAME_UE4_CRASH, confidence=0.8)
-            if x is not None and y is not None:
-                time.sleep(1)
-                pyautogui.press('enter')
-        except Exception as e:
-            time.sleep(config.UE4_POPUP)
+# def find_and_press_enter():
+#     while True:
+#         try:
+#             x, y = pyautogui.locateCenterOnScreen(IMAGE_NAME_UE4_CRASH, confidence=0.8)
+#             if x is not None and y is not None:
+#                 time.sleep(1)
+#                 pyautogui.press('enter')
+#         except Exception as e:
+#             time.sleep(config.UE4_POPUP)
 
 def restart_app(e: event):
     if app_path:
@@ -283,9 +283,9 @@ if __name__ == "__main__":
     restart_thread = Process(
         target=restart_app, args=(taskEvent,), name="restart_event"
     )
-     # 创建并启动线程-检查UE4崩溃弹窗
-    find_crash_popup = threading.Thread(target=find_and_press_enter)
-    find_crash_popup.start()
+    # 创建并启动线程-检查UE4崩溃弹窗
+    # find_crash_popup = threading.Thread(target=find_and_press_enter)
+    # find_crash_popup.start()
     restart_thread.start()
     if app_path:
         pass

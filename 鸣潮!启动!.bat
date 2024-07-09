@@ -42,7 +42,7 @@ rem 启动鸣潮
     )
 ) else (
     echo 鸣潮已在运行
-    timeout /t 3 /nobreak >nul
+    timeout /t 5 /nobreak >nul
 )
 echo 启动脚本
 

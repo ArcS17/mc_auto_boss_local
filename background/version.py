@@ -2,6 +2,14 @@ __version__ = "1.0.8"
 release_date = "2024-07-05"
 description = "更新"
 
+# ver1.0.8 patch_1
+# update:2024-07-05
+# updated by ArcS17
+# 1.新增初始化时config文件不存在以example为模板自动生成完整格式及风格的config文件
+# 2.absorption_action完成后统计一次吸收率
+# 3.config.example.TargetBoss示例增加角
+# 4.对齐日志各Level输出
+
 #去除UE4检测部分代码，回退至1.0.8
 
 # ver1.0.8
