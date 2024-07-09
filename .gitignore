@@ -157,3 +157,5 @@ test.*.py
 favicon.ico
 dist
 py310
+isCrashes.txt
+mc_log.txt

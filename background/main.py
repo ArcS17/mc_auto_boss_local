@@ -286,21 +286,25 @@ if __name__ == "__main__":
     # 创建并启动线程-检查UE4崩溃弹窗
     # find_crash_popup = threading.Thread(target=find_and_press_enter)
     # find_crash_popup.start()
+    print("\n"
+          "\n ---------------------------------------ver.1.0.8 Stable Branch by ArcS17\n"
+          )
     restart_thread.start()
+
     if app_path:
         pass
-        # logger(f"游戏路径：{config.AppPath}")
+        logger(f"游戏路径：{config.AppPath}")
     else:
         logger("未找到游戏路径", "WARN")
     logger("应用重启进程启动")
     logger(f"version: {version.__version__}")
     logger("鼠标重置进程启动")
     # print(
-    #     "\n --------------------------------------------------------------"
+    #     "\n ------------------------------------------------------------------------"
     #     "\n     注意：此脚本为免费的开源软件，如果你是通过购买获得的，那么你受骗了！\n "
-    #     "--------------------------------------------------------------\n"
+    #     "----------------------------------------------------------------------------\n"
     # )
-    # print("请确认已经配置好了config.yaml文件\n")
+    print("请确认已经配置好了config.yaml文件\n")
     print("使用说明：\n   F5  启动脚本\n   F6  合成声骸\n   F7  暂停运行\n   F8  锁定声骸\n   F12 停止运行")
     logger("开始运行")
     run_cmd_tasks_async()

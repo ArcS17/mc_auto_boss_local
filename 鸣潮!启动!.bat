@@ -1,7 +1,8 @@
 @echo off
 :: 本程序旨在检测鸣潮是否运行并自动启动鸣潮游戏本体以及auto脚本
-:: 将本程序放置于 config.example.yaml 同级目录
-:: 免责开源声明：本程序为适配开源项目 地址 https://github.com/lazydog28/mc_auto_boss 的便捷启动程序，免费分享禁止倒卖牟利，作者企鹅群号：689545101
+echo 将本程序放置于 config.example.yaml 同级目录
+echo 免责开源声明：本程序为适配开源项目 地址 https://github.com/lazydog28/mc_auto_boss 的便捷启动程序，免费分享禁止倒卖牟利，作者企鹅群号：689545101
+echo By ArcS17
 
 @REM 通过注册表读取游戏路径
 set "reg_path=SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\KRInstall Wuthering Waves"
