@@ -1,8 +1,9 @@
+chcp 65001
+
 @echo off
 :: 本程序旨在检测鸣潮是否运行并自动启动鸣潮游戏本体以及auto脚本
-echo 将本程序放置于 config.example.yaml 同级目录
-echo 免责开源声明：本程序为适配开源项目 地址 https://github.com/lazydog28/mc_auto_boss 的便捷启动程序，免费分享禁止倒卖牟利，作者企鹅群号：689545101
-echo By ArcS17
+:: 本程序为适配开源项目 https://github.com/lazydog28/mc_auto_boss 的便捷启动程序
+:: -----------------------------------------------------------------By ArcS17
 
 @REM 通过注册表读取游戏路径
 set "reg_path=SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\KRInstall Wuthering Waves"
@@ -17,7 +18,6 @@ for /f "tokens=2*" %%a in ('reg query "HKLM\%reg_path%" /v "%reg_key%" ^| findst
 REM 拼接完整路径
 set "mc_full_path=%program_path%\%folder_name%\%exe_name%"
 
-chcp 65001
 echo.
 
 net session >nul 2>nul
@@ -43,7 +43,7 @@ rem 启动鸣潮
     )
 ) else (
     echo 鸣潮已在运行
-    timeout /t 5 /nobreak >nul
+    timeout /t 7 /nobreak >nul
 )
 echo 启动脚本
 
@@ -61,7 +61,7 @@ if %ERRORLEVEL% NEQ 0 (
 rem 进入当前文件夹
 cd /d %~dp0
 echo 当前目录：%CD%
-echo 运行 main.py
+
 echo.
 echo -------------------------------------------鸣潮启动!!!-------------------------------------------------
 python .\background\main.py

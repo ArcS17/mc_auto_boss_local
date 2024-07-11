@@ -21,14 +21,22 @@ ocrIns: PaddleOCR = None
 if paddle.is_compiled_with_cuda() and paddle.get_device().startswith(
     "gpu"
 ):  # 判断是否调用GPU
+    logger("正在使用GPU加速")
     use_gpu = True
 else:
+    logger("正在使用CPU")
     use_gpu = False
 
 if current_process().name == "task":
     logger("OCR初始化中...")
     logging.disable(logging.WARNING)  # 关闭WARNING日志的打印
-    ocrIns = PaddleOCR(use_angle_cls=False, use_gpu=use_gpu, lang="ch", show_log=False)
+    ocrIns = PaddleOCR(
+        use_angle_cls=False,
+        use_gpu=use_gpu,
+        lang="ch",
+        show_log=False,
+        precision="int8",
+    )
 
 last_time = time.time()
 

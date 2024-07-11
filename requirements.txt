@@ -8,6 +8,8 @@ pyyaml
 pydantic
 onnxruntime-gpu
 paddlepaddle-gpu
-paddleocr
+paddleocr<2.8.0
 colorama
 requests
+pyautogui
+psutil
