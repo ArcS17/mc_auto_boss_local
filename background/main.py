@@ -6,12 +6,13 @@ import threading
 import sys
 import version
 import ctypes
+import psutil
 from mouse_reset import mouse_reset
 from multiprocessing import Event, Process
 from pynput.keyboard import Key, Listener
 from schema import Task
 import subprocess
-from task import boss_task, synthesis_task, echo_bag_lock_task
+from task import boss_task, synthesis_task, echo_bag_lock_task, compute_task
 from utils import *
 from config import config
 from collections import OrderedDict
@@ -164,17 +165,24 @@ def run(task: Task, e: Event):
 
     logger("卡加载监测启动")
     anti_stuck_list = []
-    last_timestamp = int(time.time())
+    last_anti_stuck_timestamp = int(time.time())
+    logger("UE4崩溃监测启动")
+    last_check_ue4_timestamp = int(time.time())
 
     while e.is_set():
+        # 监测UE4-Client Game已崩溃弹窗，发现就关闭弹窗，干掉游戏进程
+        check_timestamp = ue4_client_crash_monitor(last_check_ue4_timestamp)
+        if check_timestamp is not None:
+            last_check_ue4_timestamp = check_timestamp
+
         img = screenshot()
         result = ocr(img)
         task(img, result)
 
         # 监测游戏是否卡加载，长时间卡在加载界面就干掉游戏进程
-        check_timestamp = anti_stuck_monitor(img, anti_stuck_list, last_timestamp)
+        check_timestamp = anti_stuck_monitor(img, anti_stuck_list, last_anti_stuck_timestamp)
         if check_timestamp is not None:
-            last_timestamp = check_timestamp
+            last_anti_stuck_timestamp = check_timestamp
     logger("进程停止运行")
 
 
@@ -219,6 +227,25 @@ def on_press(key):
         mouse_reset_thread.join()
         thread = Process(target=run, args=(echo_bag_lock_task, taskEvent), name="task")
         thread.start()
+    if key == Key.f9:
+        logger("声骇得分计算启动，请确认当前处于角色声骇详情页","WARN")
+        try:
+            input(
+                "\n         计算需要在角色声骇详情页面进行，否则将无法识别"
+                "\n         前往顺序为 按下C-> 属性详情-> 声骇-> 点击右侧声骇，请确保处于该页面，否则将无法识别"
+                "\n         目前仅适配1280*720分辨率    回车确认 Enter..."
+            )
+                
+        # except:
+        #     pass
+        except Exception as e:
+            logger(f"发生错误: {e}", "ERROR")
+            taskEvent.clear()
+            mouseResetEvent.set()
+            restart_thread.terminate()  # 杀死默认开启状态的检测窗口的线程
+            sys.exit(1)
+        thread = Process(target=run, args=(compute_task, taskEvent), name="task")
+        thread.start()
     if key == Key.f12:
         logger("请等待程序退出后再关闭窗口...")
         taskEvent.clear()
@@ -248,6 +275,13 @@ def run_cmd_tasks_async():
     # 守护线程
     cmd_task_thread.daemon = True
     cmd_task_thread.start()
+
+def check_memory_usage():
+    process = psutil.Process()
+    memory_info = process.memory_info()
+    print("当前内存使用情况：")
+    print(f"物理内存使用：{memory_info.rss / (1024 ** 2):.2f} MB")
+    print(f"虚拟内存使用：{memory_info.vms / (1024 ** 2):.2f} MB")
 
 
 def cmd_task_func(cmd_task_dict: OrderedDict[str, Key]):
@@ -286,13 +320,13 @@ if __name__ == "__main__":
     logger(f"version: {version.__version__}")
     logger("鼠标重置进程启动")
     print(
-        "\n --------------------------------------------------------------"
+        "\n --------------------------------------------------------------------------"
         "\n     注意：此脚本为免费的开源软件，如果你是通过购买获得的，那么你受骗了！\n "
-        "--------------------------------------------------------------\n"
+        "--------------------------------------------------------------------------\n"
     )
     print("请确认已经配置好了config.yaml文件\n")
     print(
-        "使用说明：\n   F5  启动脚本\n   F6  合成声骸\n   F7  暂停运行\n   F8  锁定声骸\n   F12 停止运行"
+        "使用说明：\n   F5  启动脚本\n   F6  合成声骸\n   F7  暂停运行\n   F8  锁定声骸\n   F9  声骇得分计算\n   F12 停止运行"
     )
     logger("开始运行")
     run_cmd_tasks_async()

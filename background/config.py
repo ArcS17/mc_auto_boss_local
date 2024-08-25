@@ -10,6 +10,7 @@ import yaml
 import shutil
 import os
 import winreg
+import psutil
 from cmd_line import get_config_path
 from constant import wait_exit, root_path
 from typing import Optional, Dict, List
@@ -32,7 +33,7 @@ class Config(BaseModel):
     RestartWutheringWavesTime: int = Field(7200, title="游戏自动重启间隔时间")
     RebootCount: int = Field(0, title="截取窗口失败次数")
     DetectionUE4: bool = Field(True, title="是否检测UE4崩溃")
-    UE4_POPUP: int = Field(30, title="UE4崩溃弹窗检测间隔时间")
+    UE4_POPUP: int = Field(60, title="UE4崩溃弹窗检测间隔时间")
 
     # 控制台信息
     EchoDebugMode: bool = Field(True, title="声骸锁定功能DEBUG显示输出的开关")
@@ -45,14 +46,20 @@ class Config(BaseModel):
     MaxIdleTime: int = Field(10, title="最大空闲时间", ge=5)
     MaxSearchEchoesTime: int = Field(18, title="最大搜索声骸时间")
     SelectRoleInterval: int = Field(2, title="选择角色间隔时间", ge=2)
-    DungeonWeeklyBossWaitTime: int = Field(0, title="周本(副本)boss额外等待时间")
     DungeonWeeklyBossLevel: int = Field(40, title="周本(副本)boss等级")
+    BossWaitTime_Dreamless: float = Field(3, title="进入-无妄者-周本等待时间")
+    BossWaitTime_Jue: float = Field(2, title="进入-角-周本等待时间")
     SearchEchoes: bool = Field(False, title="是否搜索声骸")
     SearchDreamlessEchoes: bool = Field(True, title="是否搜索无妄者")
     CharacterHeal: bool = Field(True, title="是否判断角色是否阵亡")
     WaitUltAnimation: bool = Field(False, title="是否等待大招时间")
     EchoLock: bool = Field(False, title="是否启用锁定声骸功能")
     EchoLockConfig: Dict[str, Dict[str, List[str]]] = Field(default_factory=dict)
+    EnhancedComputing: bool = Field(False, title="是否启用声骇强化计分")
+    ComputeRoleName: str = Field("默认", title="声骇强化计分的角色名称")
+    ComputeTactic: List[int] = Field(
+        [0, 10, 36, 78], title="声骇每级计算策略 默认提供强化最优策略 [0, 10, 36, 78]可自行修改 第一位为5级声骇期望分值，第二位为10级，第三位为15级，第四位为20级 详细计算方法请参考 https://ngabbs.com/read.php?tid=40813747&_fu=62546171%2C1&rand=665"
+    )
     EchoMaxContinuousLockQuantity: int = Field(
         5, title="最大连续检测到已锁定声骸的数量"
     )
@@ -158,9 +165,10 @@ if len(config.TargetBoss) == 0:
 
 # 加载声骸锁定配置文件
 if config.EchoLock:
-    if os.path.exists(os.path.join(root_path, "echo_config.yaml")):
+    echo_config_path = os.path.join(root_path, "echo_config.yaml")
+    if os.path.exists(echo_config_path):
         with open(
-            os.path.join(root_path, "echo_config.yaml"), "r", encoding="utf-8"
+            echo_config_path, "r", encoding="utf-8"
         ) as f:
             echo_config_data = yaml.safe_load(f)
             config.EchoLockConfig = echo_config_data.get("EchoLockConfig", {})
@@ -179,5 +187,5 @@ if config.EchoLock:
                     echo_set_dict[cost + "COST"] = []
         # print("\n" + str(config.EchoLockConfig))
     else:
-        print("缺少声骸配置文件")
+        print("缺少声骸配置文件，请复制example文件进行配置，目标文件路径：%s" % echo_config_path)
         wait_exit()

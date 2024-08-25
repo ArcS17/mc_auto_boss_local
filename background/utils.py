@@ -13,6 +13,7 @@ import os
 import win32con
 import numpy as np
 import itertools
+import hwnd_util
 from PIL import Image, ImageGrab
 from ctypes import windll
 from typing import List, Tuple, Union
@@ -26,6 +27,7 @@ from schema import Position
 from datetime import datetime
 from yolo import search_echoes
 from echo import echo
+from caculate import calculate_total_weight
 
 
 def interactive():
@@ -123,6 +125,8 @@ def release_skills():
                 elif tactic == "s":
                     # control.space()
                     control.fight_space()
+                elif tactic == "l":
+                    control.dodge() # 闪避
                 elif tactic == "r":  # 大招时判断是否释放
                     control.fight_tap(tactic)
                     time.sleep(0.2)
@@ -171,6 +175,8 @@ def release_skills():
                         control.fight_click()
                     elif tactic == "s":
                         control.fight_space()
+                    elif tactic == "l":
+                        control.dodge() # 闪避
                     else:
                         control.fight_tap(tactic)
         except Exception as e:
@@ -308,22 +314,22 @@ def transfer_to_boss(bossName):
     time.sleep(1)
     # control.click(1700 * width_ratio, 980 * height_ratio)
     random_click(1700, 980)
-    if not wait_text("追踪"):
+    if not wait_text("追踪", timeout=5):
         logger("未找到追踪", "WARN")
         control.esc()
         return False
     # control.click(960 * width_ratio, 540 * height_ratio)
     random_click(960, 540)
-    beacon = wait_text("借位信标")
+    beacon = wait_text("借位信标", timeout=5)
     if not beacon:
         logger("未找到借位信标", "WARN")
         control.esc()
         return False
     click_position(beacon.position)
-    if transfer := wait_text("快速旅行"):
+    if transfer := wait_text("快速旅行", timeout=5):
         click_position(transfer.position)
+        time.sleep(0.5)
         logger("等待传送完成")
-        # time.sleep(0.1)
         wait_home()  # 等待回到主界面
         logger("传送完成")
         now = datetime.now()
@@ -363,7 +369,7 @@ def transfer_to_dreamless():
     if transfer := wait_text("快速旅行"):
         click_position(transfer.position)
         logger("等待传送完成")
-        time.sleep(0.2)
+        time.sleep(0.5)
         wait_home()  # 等待回到主界面
         logger("传送完成")
         time.sleep(2)
@@ -371,6 +377,7 @@ def transfer_to_dreamless():
         info.idleTime = now  # 重置空闲时间
         info.lastFightTime = now  # 重置最近检测到战斗时间
         info.fightTime = now  # 重置战斗时间
+        time.sleep(1)
         for i in range(5):
             forward()
             time.sleep(0.1)
@@ -409,13 +416,8 @@ def transfer() -> bool:
         return True
     if info.lastBossName == "角" and bossName == "角":
         logger("前往角 且 刚才已经前往过")
-        control.tap("a")
-        control.tap("a")
-        time.sleep(0.2)
-        control.tap("s")
-        control.tap("s")
-        control.tap("s")
-        control.tap("s")
+        time.sleep(0.5)
+        control.dodge() # 闪避功能已重写为函数
         now = datetime.now()
         info.idleTime = now  # 重置空闲时间
         info.lastFightTime = now  # 重置最近检测到战斗时间
@@ -426,8 +428,8 @@ def transfer() -> bool:
     control.tap(win32con.VK_F2)
     time.sleep(1)
     if not wait_text(
-        ["日志", "活跃", "挑战", "强者", "残象", "周期", "探寻", "漂泊"], timeout=5
-    ):
+        ["日志", "活跃", "挑战", "强者", "残象", "周期", "探寻", "漂泊"], timeout=7
+    ):  
         logger("未进入索拉指南", "WARN")
         control.esc()
         info.lastFightTime = datetime.now()
@@ -481,16 +483,16 @@ def screenshot() -> np.ndarray | None:
         except Exception as e:
             logger(f"清理截图资源失败: {e}", "ERROR")
         # 重试，若失败多次重新启动游戏以唤醒至前台
-        if config.RebootCount < 5:
+        if config.RebootCount < 3:
             time.sleep(1)
             return screenshot()  # 截取失败，重试
         else:
             config.RebootCount = 0
             logger("正在重新启动游戏及脚本...", "INFO")
             from main import close_window
-
-            close_window("UnrealWindow", "鸣潮  ")
-            raise Exception("截取游戏窗口失败且重试次数超过上限，正在重启游戏")
+            close_window()
+            # close_window("UnrealWindow", "鸣潮  ")
+            raise Exception("截取游戏窗口失败且重试次数超过上限，正在重启游戏") from None
 
     # 从位图中获取图像数据
     bmp_info = saveBitMap.GetInfo()  # 获取位图信息
@@ -617,6 +619,7 @@ def wait_text(targets: str | list[str], timeout: int = 3) -> OcrResult | None:
         result = ocr(img)
         for target in targets:
             if text_info := search_text(result, target):
+                # print(f"ocr是否识别成功:{text_info}") # ocr debug使用
                 return text_info
 
         time.sleep(0.1)  # 每次截图和 OCR 处理之间增加一个短暂的暂停时间
@@ -637,6 +640,7 @@ def wait_home(timeout=120) -> bool:
             raise Exception("等待回到主界面超时")
         img = screenshot()
         if img is None:
+            time.sleep(0.3)
             continue
         results = ocr(img)
         if search_text(results, "特征码"):  # 特征码
@@ -651,13 +655,12 @@ def wait_home(timeout=120) -> bool:
         template = np.array(template)
         if match_template(img, template, threshold=0.9):
             return True
+        time.sleep(0.3)
 
 
 def turn_to_search() -> int | None:
     x = None
-    time.sleep(
-        3
-    )  # 增加延时以及搜索次数以避免boss死亡连招未结束导致前几轮次搜索不生效(ArcS17)
+    time.sleep(2)  # 增加延时以及搜索次数以避免boss死亡连招未结束导致前几轮次搜索不生效
     for i in range(5):
         if i == 0:
             control.activate()
@@ -671,7 +674,7 @@ def turn_to_search() -> int | None:
             return
         logger("未发现声骸,转动视角")
         control.tap("a")
-        time.sleep(1)
+        time.sleep(0.5)
         control.mouse_middle()
         time.sleep(1)
     return x
@@ -714,7 +717,7 @@ def absorption_action():
             control.tap("d")
         else:
             logger("发现声骸 向前移动")
-            for i in range(4):
+            for i in range(3):
                 forward()
                 time.sleep(0.1)
         if absorption_and_receive_rewards({}):
@@ -745,9 +748,14 @@ def absorption_and_receive_rewards(positions: dict[str, Position]) -> bool:
         return False
     logger("吸收声骸")
     info.absorptionCount += 1
+    absorption_rate = (
+        info.absorptionCount/info.fightCount 
+        if info.absorptionCount/info.fightCount <= 1 
+        else 1
+    )
     logger(
         f"目前声骸吸收率为："
-        + str(format(info.absorptionCount / info.fightCount * 100, ".2f"))
+        + str(format(absorption_rate * 100, ".2f"))
         + "%",
         "DEBUG",
     )
@@ -793,6 +801,25 @@ def transfer_to_heal(healBossName: str = "朔雷之鳞"):
         logger("治疗_未找到追踪", "WARN")
         control.esc()
         return False
+    # 首次进行治疗时先进行地图缩放 From Rin
+    region = set_region(1625, 895, 1885, 1050)
+    if info.healCount == 0: 
+        i = 0
+        while not wait_text_designated_area("自定义标记", region=region):
+            random_click(960, 300)
+            time.sleep(0.5)
+            i += 1
+            if i > 3:
+                for _ in range(2):
+                    control.esc()
+                    time.sleep(0.5)
+                logger("地图缩放时出现问题，退出地图界面", "DEBUG")
+                return
+        for _ in range(5):
+            control.scroll(3, 960 * width_ratio, 540 * height_ratio)
+            time.sleep(0.2)
+            logger("正在对地图进行缩放","DEBUG")
+        time.sleep(0.5)  
     # control.click(1210 * width_ratio, 525 * height_ratio)
     random_click(1210, 525)
     if transfer := wait_text("快速旅行"):
@@ -854,6 +881,7 @@ def wait_text_designated_area(
 
         img = screenshot()
         if img is None:
+            print("屏幕截取失败 img为None")
             time.sleep(0.1)  # 如果截图失败，等待短暂时间再试
             continue
 
@@ -1023,11 +1051,11 @@ def boss_wait(bossName):
         logger("机器人需要等待7秒开始战斗！", "DEBUG")
         time.sleep(7)
     elif contains_any_combinations(bossName, keywords_dreamless, min_chars=3):
-        logger("无妄者需要等待3秒开始战斗！", "DEBUG")
-        time.sleep(3)
+        logger(f"无妄者需要等待{config.BossWaitTime_Dreamless}秒开始战斗！", "DEBUG")
+        time.sleep(config.BossWaitTime_Dreamless)
     elif contains_any_combinations(bossName, keywords_jue, min_chars=1):
-        logger("角需要等待3秒开始战斗！", "DEBUG")
-        time.sleep(3)
+        logger(f"角需要等待{config.BossWaitTime_Jue}秒开始战斗！", "DEBUG")
+        time.sleep(config.BossWaitTime_Jue)
     else:
         logger("当前BOSS可直接开始战斗！", "DEBUG")
 
@@ -1076,7 +1104,7 @@ def echo_bag_lock():
     """
     # 开始执行判断
     if not config.EchoLock:
-        logger("未启动该功能", "WARN")
+        logger("未启用该功能，请在config.yaml中更改EchoLock配置", "WARN")
         return False
     info.echoNumber += 1
     this_echo_row = info.echoNumber // 6 + 1
@@ -1091,10 +1119,6 @@ def echo_bag_lock():
         )
         logger(
             "tips:此功能需要关闭声骸详细描述(即在角色声骸装备处显示详情，在背包内显示简介)",
-            "WARN",
-        )
-        logger(
-            "步骤:点击键盘【C键】打开共鸣者，点击声骸，点击任意声骸，点击右上角简述将开关拨向左边",
             "WARN",
         )
         logger(
@@ -1151,10 +1175,11 @@ def echo_bag_lock():
         if info.echoIsLockQuantity > config.EchoMaxContinuousLockQuantity:
             logger(
                 f"连续检出已锁定声骸{info.echoIsLockQuantity}个，超出设定值，结束",
-                "DEBUG",
+                "DEBUG"
             )
             logger(
-                f"本次总共检查{info.echoNumber}个声骸，有{info.inSpecEchoQuantity}符合条件并锁定！！"
+                f"本次总共检查{info.echoNumber}个声骸，有{info.inSpecEchoQuantity}符合条件并锁定",
+                "DEBUG"
             )
             return False
         echo_next_row(info.echoNumber)
@@ -1167,15 +1192,15 @@ def echo_bag_lock():
     this_echo_cost = None
     # 先检测cost 4
     if find_pic(
-        1690, 200, 1830, 240, f"COST4{info.adaptsResolution}.png", 0.98, img, False
+        1690, 200, 1830, 240, f"COST4{info.adaptsResolution}.png", 0.93, img, False
     ):
         this_echo_cost = "4"
     elif find_pic(
-        1690, 200, 1830, 240, f"COST1{info.adaptsResolution}.png", 0.98, img, False
+        1690, 200, 1830, 240, f"COST1{info.adaptsResolution}.png", 0.93, img, False
     ):
         this_echo_cost = "1"
     elif find_pic(
-        1690, 200, 1830, 240, f"COST3{info.adaptsResolution}.png", 0.98, img, False
+        1690, 200, 1830, 240, f"COST3{info.adaptsResolution}.png", 0.93, img, False
     ):
         this_echo_cost = "3"
 
@@ -1222,7 +1247,8 @@ def echo_bag_lock():
                 time.sleep(0.02)
             time.sleep(0.8)
             random_click(1510, 690)
-    region = set_region(1425, 425, 1620, 470)
+    #region = set_region(1425, 425, 1620, 470) 鸣潮版本1.2-声骸背包ui更改导致region适配失效
+    region = set_region(1380, 420, 1590, 470)
     cost_mapping = {
         "1": (echo.echoCost1MainStatus, 1),
         "3": (echo.echoCost3MainStatus, 1),
@@ -1232,7 +1258,7 @@ def echo_bag_lock():
     text_result = wait_text_designated_area(func, param, region, 3)
     if is_echo_ebug:
         print(
-            "\n wait_text_designated_area(0)" + str(text_result)
+            "\n Tag = wait_text_designated_area(0)" + "文本识别内容为：" + str(text_result)
         )  # 主词条识别失败Debug使用
     this_echo_main_status = wait_text_result_search(text_result)
     if is_echo_ebug:
@@ -1686,7 +1712,7 @@ def echo_synthesis():
         control.esc()
 
     adapts()
-    synthesis_wait_time = 3
+    synthesis_wait_time = 2.5
     if config.EchoSynthesisDebugMode:
         logger(f"等待合成中{synthesis_wait_time}", "DEBUG")
     time.sleep(synthesis_wait_time)
@@ -1927,6 +1953,27 @@ def anti_stuck_monitor(img, anti_stuck_list: list, last_timestamp: int) -> int |
     return now_timestamp
 
 
+# 监测UE4-Client Game已崩溃弹窗，发现就关闭弹窗，干掉游戏进程 by wakening
+def ue4_client_crash_monitor(last_timestamp: int) -> int | None:
+    now_timestamp = int(time.time())
+    # 隔一段时间(秒)收集一次
+    if now_timestamp - last_timestamp < 60:
+        return None
+    ue4_client_crash_hwnd = hwnd_util.get_ue4_client_crash_hwnd()
+    if ue4_client_crash_hwnd is None:
+        # logger("没找到崩溃窗口")
+        return now_timestamp
+    logger("监测到UE4-Client Game已崩溃，关闭游戏", "WARN")
+    try:
+        win32gui.SendMessage(ue4_client_crash_hwnd, win32con.WM_CLOSE, 0, 0)
+        time.sleep(1)
+        win32gui.SendMessage(hwnd, win32con.WM_CLOSE, 0, 0)
+        time.sleep(1)
+    except Exception as e:
+        logger(f"关闭窗口时发生异常: {e}", "ERROR")
+    return now_timestamp
+
+
 # 关闭窗口
 def close_window(class_name: str = "UnrealWindow", window_title: str = "鸣潮  "):
     # 尝试关闭窗口，如果成功返回 True，否则返回 False
@@ -1937,4 +1984,113 @@ def close_window(class_name: str = "UnrealWindow", window_title: str = "鸣潮  
         time.sleep(2)
         if win32gui.FindWindow(class_name, window_title) == 0:
             return True
+    return False
+
+# 声骇得分计算
+def role_equip_points():
+
+    if not config.EnhancedComputing:
+        logger("未启用该功能，请在config.yaml中更改EnhancedComputing配置", "WARN")
+        return False
+
+    logger("默认按正常比例适配计算，如需计算特殊角色，请前往配置文件中配置", "WARN")
+    logger("计算需要在角色声骇详情页面进行，请确保前往顺序为 按下C -> 属性详情 -> 声骇 -> 点击右侧声骇 即可。请确保处于该页面，否则可能识别失败。","WARN")
+    time.sleep(1)
+
+    logger("目前支持特殊计算角色：\n - 今汐\n - 忌炎  ")
+    role_name = config.ComputeRoleName
+    max_attempts = 10
+    retry_interval = 5
+
+    logger("共进行{}次尝试，每隔{}秒进行一次识别，请在一次识别后手动选择另一个声骇".format(max_attempts, retry_interval), "DEBUG")
+    grade  = 0
+    compute_static = config.ComputeTactic
+    if len(compute_static) < 4:
+        logger("声骇计算配置错误，请检查配置文件", "ERROR")
+
+    for attempt in range(max_attempts):
+        img = screenshot()
+        if img is None:
+            time.sleep(0.2)
+            continue
+
+        img_entry = img[205:320, 965:1220]
+        img_pil2 = img[100:160, 930:1000]
+
+        result = ocr(img_pil2)
+
+        up = 0
+        for item in result:
+            if "+" in item.text:
+                try:
+                    up = int(item.text.split("+")[1])
+                except ValueError:
+                    up = -1
+                break
+            else:
+                up = -1
+        if up == -1:
+            logger("声骸等级识别失败，请检查识别内容", "WARN")
+            print(f"{result}")
+            return False
+
+        result = ocr(img_entry)
+
+        if not result and up > 5 :
+            for _ in range(3):
+                logger("声骸识别失败，尝试重新识别", "WARN")
+                result = ocr(img_entry)
+                if result:
+                    break
+
+            if not result:
+                print(f"{result}")
+                print(f"{up}")
+                logger(f"声骸识别失败，请检查识别内容{up},{result}", "WARN")
+                return False
+        if up < 10:
+            result = result[:2]
+            grade = 0
+        elif up < 15:
+            result = result[:4]
+            grade = 1
+        elif up < 20:
+            result = result[:6]
+            grade = 2
+        elif up < 25:
+            result = result[:8]
+            grade = 3
+        elif up == 25:
+            result = result[:10]
+            grade = -1
+
+        paired_results = []
+        for i in range(0, len(result), 2):
+            if i + 1 < len(result):
+                if "骸" in result[i].text:
+                    break  # 检测到“骸”字，结束循环
+                if "攻击" in result[i].text and "%" in result[i+1].text:
+                    paired_results.append(("大" + result[i].text, result[i+1].text))
+                else:
+                    paired_results.append((result[i].text, result[i+1].text))
+        if not paired_results and up < 5:
+            logger("当前声骸等级{up}，声骇等级过低，无法计算，请重新选择", "WARN")
+            time.sleep(retry_interval)
+            continue
+
+        print("\n---------------------------------------------------------- \n")
+        total_weight, adjusted_total_weight, max_total_weight, max_adjusted_total_weight  = calculate_total_weight(paired_results, role_name)
+        print(f"当前计分模型中，伤害型角色通用最高分为228.2,特殊伤害加成提升最高分为251.4,可自行参考比对")
+        if adjusted_total_weight is not None:
+            print(f"当前声骸等级{up},角色{role_name}本套声骇上限最高分为：{max_adjusted_total_weight}，角色{role_name}计算得分为：{adjusted_total_weight}")
+        else:
+            print(f"当前声骸等级{up},本套声骇上限最高分为：{max_total_weight}，计算得分为：{total_weight}")
+        if grade != -1:
+            if role_name == "默认" or adjusted_total_weight is None:
+                print(f"当前声骇等级{up}，计算得分为：{total_weight}, 期望分为：{compute_static[grade]}，请自行确认比较")
+            else :
+                print(f"当前声骇等级{up}，计算得分为：{max_adjusted_total_weight}, 期望分为：{compute_static[grade]}，请自行确认比较")
+        print("\n----------------------------------------------------------- \n")
+        time.sleep(retry_interval)
+
     return False

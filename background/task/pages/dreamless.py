@@ -109,7 +109,7 @@ def recommended_level_action(positions: dict[str, Position]) -> bool:
         )  # 如果没有自动搜索的结果，但有Config值且不为默认值，则使用Config值
     result = wait_text("推荐等级" + str(dungeon_weekly_boss_level))
     if not result:
-        for i in range(1, 5):
+        for i in range(1, 3):
             control.esc()
             result = wait_text("推荐等级" + str(dungeon_weekly_boss_level + (10 * i)))
             if result:
@@ -118,7 +118,7 @@ def recommended_level_action(positions: dict[str, Position]) -> bool:
     if not result:
         control.esc()
         return False
-    for i in range(5):
+    for i in range(3):
         click_position(result.position)
         time.sleep(0.5)
     result = find_text("单人挑战")
@@ -217,7 +217,7 @@ def confirm_leave_action(positions: dict[str, Position]) -> bool:
     :return:
     """
     click_position(positions["确认"])
-    time.sleep(0.5)
+    time.sleep(3)
     wait_home()
     logger(f"{info.lastBossName}副本结束")
     time.sleep(2)

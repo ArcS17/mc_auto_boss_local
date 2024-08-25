@@ -159,4 +159,5 @@ dist
 py310
 echo_config.yaml
 isCrashes.txt
-
+message.png
+mc_log.txt
