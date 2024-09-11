@@ -13,6 +13,7 @@ from multiprocessing import current_process
 import numpy as np
 from schema import OcrResult, Position
 from config import config
+# from config import check_memory_usage
 import logging
 from status import logger
 
@@ -53,6 +54,7 @@ def ocr(img: np.ndarray) -> list[OcrResult]:
             time.sleep(wait_time)
     last_time = time.time()
     results = ocrIns.ocr(img)[0]
+    # check_memory_usage()
     # print(f"ocr当前扫描结果{results}") # ocr debug使用
     if not results:
         return []

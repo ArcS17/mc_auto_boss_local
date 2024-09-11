@@ -52,6 +52,17 @@ def absorption_action(positions: dict[str, Position]) -> bool:
     if not find_text("吸收"):
         return False
     info.absorptionCount += 1
+    absorption_rate = (
+        info.absorptionCount/info.fightCount 
+        if info.absorptionCount/info.fightCount <= 1 
+        else 1
+    )
+    logger(
+        f"目前声骸吸收率为："
+        + str(format(absorption_rate * 100, ".2f"))
+        + "%",
+        "DEBUG",
+    )
     interactive()
     time.sleep(2)
     info.needAbsorption = False
@@ -166,10 +177,6 @@ def fight_action(positions: dict[str, Position]) -> bool:
     :return:
     """
     if info.status != Status.fight:
-        # 已增加周本分别自定义等待时间替换该功能
-        # if (info.inDreamless or info.inJue) and config.DungeonWeeklyBossWaitTime > 0:
-        #     logger(f"周本副本战斗延迟{config.DungeonWeeklyBossWaitTime}")
-        #     time.sleep(config.DungeonWeeklyBossWaitTime)
         info.fightCount += 1
         info.needAbsorption = True
         info.fightTime = datetime.now()

@@ -6,10 +6,11 @@ numpy==1.26.4
 setuptools
 pyyaml
 pydantic
-onnxruntime-gpu
+onnxruntime-gpu < 1.18
 paddlepaddle-gpu
-paddleocr<2.8.0
+paddleocr < 2.8.0
 colorama
 requests
 pyautogui==0.9.50
 psutil
+screeninfo

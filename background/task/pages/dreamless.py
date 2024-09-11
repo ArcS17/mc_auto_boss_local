@@ -109,7 +109,7 @@ def recommended_level_action(positions: dict[str, Position]) -> bool:
         )  # 如果没有自动搜索的结果，但有Config值且不为默认值，则使用Config值
     result = wait_text("推荐等级" + str(dungeon_weekly_boss_level))
     if not result:
-        for i in range(1, 5):
+        for i in range(1, 3):
             control.esc()
             result = wait_text("推荐等级" + str(dungeon_weekly_boss_level + (10 * i)))
             if result:
@@ -118,7 +118,7 @@ def recommended_level_action(positions: dict[str, Position]) -> bool:
     if not result:
         control.esc()
         return False
-    for i in range(5):
+    for i in range(3):
         click_position(result.position)
         time.sleep(0.5)
     result = find_text("单人挑战")
@@ -157,6 +157,8 @@ def start_challenge_action(positions: dict[str, Position]) -> bool:
     click_position(position)
     time.sleep(0.5)
     info.lastFightTime = datetime.now()
+    if info.fightCount <= 1:
+        info.routineBeginTime = datetime.now()
     return True
 
 
@@ -219,7 +221,16 @@ def confirm_leave_action(positions: dict[str, Position]) -> bool:
     click_position(positions["确认"])
     time.sleep(3)
     wait_home()
-    logger(f"{info.lastBossName}副本结束")
+    now = datetime.now()
+    info.routineEndTime = now
+    costTime = info.routineEndTime - info.routineBeginTime
+    info.routineBeginTime = info.routineEndTime
+    #timedelta格式化
+    hours, remainder = divmod(costTime.total_seconds(), 3600)
+    minutes, seconds = divmod(remainder, 60)
+    formatted_costTime = f'{int(minutes):02}分{int(seconds):02}秒'
+    logger(f"{info.lastBossName}副本结束，本轮耗时{formatted_costTime}"
+           ,"DEBUG")
     time.sleep(2)
     if info.lastBossName == "角":
         info.inJue = False

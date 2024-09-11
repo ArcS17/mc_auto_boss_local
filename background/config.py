@@ -10,6 +10,7 @@ import yaml
 import shutil
 import os
 import winreg
+import psutil
 from cmd_line import get_config_path
 from constant import wait_exit, root_path
 from typing import Optional, Dict, List

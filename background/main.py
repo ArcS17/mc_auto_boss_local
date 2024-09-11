@@ -6,6 +6,7 @@ import threading
 import sys
 import version
 import ctypes
+import psutil
 from mouse_reset import mouse_reset
 from multiprocessing import Event, Process
 from pynput.keyboard import Key, Listener
@@ -146,7 +147,7 @@ def set_console_title(title: str):
 
 
 set_console_title(
-    f"鸣潮自动工具ver {version.__version__}   ---此软件为免费的开源软件 谨防倒卖！"
+    f"鸣潮自动工具ver {version.__version__}   --by ArcS17"
 )
 
 
@@ -275,6 +276,13 @@ def run_cmd_tasks_async():
     cmd_task_thread.daemon = True
     cmd_task_thread.start()
 
+def check_memory_usage():
+    process = psutil.Process()
+    memory_info = process.memory_info()
+    print("当前内存使用情况：")
+    print(f"物理内存使用：{memory_info.rss / (1024 ** 2):.2f} MB")
+    print(f"虚拟内存使用：{memory_info.vms / (1024 ** 2):.2f} MB")
+
 
 def cmd_task_func(cmd_task_dict: OrderedDict[str, Key]):
     # print(str(cmd_task_dict))
@@ -309,11 +317,12 @@ if __name__ == "__main__":
     else:
         logger("未找到游戏路径", "WARN")
     logger("应用重启进程启动")
-    logger(f"version: {version.__version__}")
+    logger("")
+    logger(f"version: {version.__version__}--by ArcS17")
     logger("鼠标重置进程启动")
     print(
         "\n --------------------------------------------------------------------------"
-        "\n     注意：此脚本为免费的开源软件，如果你是通过购买获得的，那么你受骗了！\n "
+        "\n     注：此脚本为免费开源软件，如果你是通过购买获得，及时要求退款\n "
         "--------------------------------------------------------------------------\n"
     )
     print("请确认已经配置好了config.yaml文件\n")

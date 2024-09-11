@@ -29,6 +29,7 @@ from yolo import search_echoes
 from echo import echo
 from caculate import calculate_total_weight
 
+config.EchoDebugMode = True
 
 def interactive():
     control.tap("f")
@@ -302,7 +303,6 @@ def transfer_to_boss(bossName):
         findBoss = find_text(bossName)
         if findBoss:
             break
-        # control.click(855 * width_ratio, y * height_ratio)
         random_click(855, y, 1, 3)
         time.sleep(0.3)
     if not findBoss:
@@ -312,33 +312,55 @@ def transfer_to_boss(bossName):
     click_position(findBoss.position)
     click_position(findBoss.position)
     time.sleep(1)
-    # control.click(1700 * width_ratio, 980 * height_ratio)
     random_click(1700, 980)
-    if not wait_text("追踪", timeout=5):
-        logger("未找到追踪", "WARN")
-        control.esc()
-        return False
-    # control.click(960 * width_ratio, 540 * height_ratio)
-    random_click(960, 540)
-    beacon = wait_text("借位信标", timeout=5)
-    if not beacon:
-        logger("未找到借位信标", "WARN")
-        control.esc()
-        return False
-    click_position(beacon.position)
-    if transfer := wait_text("快速旅行", timeout=5):
-        click_position(transfer.position)
-        time.sleep(0.5)
-        logger("等待传送完成")
-        wait_home()  # 等待回到主界面
-        logger("传送完成")
-        now = datetime.now()
-        info.idleTime = now  # 重置空闲时间
-        info.lastFightTime = now  # 重置最近检测到战斗时间
-        info.fightTime = now  # 重置战斗时间
-        info.lastBossName = bossName
-        info.waitBoss = True
-        return True
+    if bossName == "角":
+        if transfer := wait_text("快速旅行", timeout=3):
+            logger("当前目标能够快速旅行", "INFO")
+            click_position(transfer.position)
+            time.sleep(0.5)
+            logger("等待传送完成")
+            time.sleep(0.5)
+            wait_home()  # 等待回到主界面
+            time.sleep(0.5)
+            logger("传送完成")
+            now = datetime.now()
+            info.idleTime = now  # 重置空闲时间
+            info.lastFightTime = now  # 重置最近检测到战斗时间
+            info.fightTime = now  # 重置战斗时间
+            info.waitBoss = True
+            for i in range(5):
+                forward()
+                time.sleep(0.1)
+            time.sleep(1)
+            return True
+        else:
+            logger("未找到快速旅行", "WARN")
+            control.esc()
+            return False
+    else:
+        if not wait_text("追踪", timeout=3):
+            logger("未找到追踪", "WARN")
+            control.esc()
+            return False
+        random_click(960, 540)
+        beacon = wait_text("借位信标", timeout=3)
+        if not beacon:
+            logger("未找到借位信标", "WARN")
+            control.esc()
+            return False
+        click_position(beacon.position)
+        if transfer := wait_text("快速旅行", timeout=5):
+            click_position(transfer.position)
+            time.sleep(0.5)
+            logger("等待传送完成")
+            wait_home()  # 等待回到主界面
+            logger("传送完成")
+            now = datetime.now()
+            info.idleTime = now  # 重置空闲时间
+            info.lastFightTime = now  # 重置最近检测到战斗时间
+            info.fightTime = now  # 重置战斗时间
+            info.waitBoss = True
+            return True
     control.esc()
     return False
 
@@ -416,8 +438,7 @@ def transfer() -> bool:
         return True
     if info.lastBossName == "角" and bossName == "角":
         logger("前往角 且 刚才已经前往过")
-        time.sleep(0.5)
-        control.dodge() # 闪避功能已重写为函数
+        control.dodge() # 闪避进本
         now = datetime.now()
         info.idleTime = now  # 重置空闲时间
         info.lastFightTime = now  # 重置最近检测到战斗时间
@@ -619,8 +640,8 @@ def wait_text(targets: str | list[str], timeout: int = 3) -> OcrResult | None:
         result = ocr(img)
         for target in targets:
             if text_info := search_text(result, target):
+                # print(f"ocr是否识别成功:{text_info}") # ocr debug使用
                 return text_info
-        # print(f"ocr是否识别成功:{text_info}") # ocr debug使用
 
         time.sleep(0.1)  # 每次截图和 OCR 处理之间增加一个短暂的暂停时间
     return None
@@ -656,13 +677,11 @@ def wait_home(timeout=120) -> bool:
         if match_template(img, template, threshold=0.9):
             return True
         time.sleep(0.3)
-
+    
 
 def turn_to_search() -> int | None:
     x = None
-    time.sleep(
-        3
-    )  # 增加延时以及搜索次数以避免boss死亡连招未结束导致前几轮次搜索不生效(ArcS17)
+    time.sleep(2)  # 增加延时以及搜索次数以避免boss死亡连招未结束导致前几轮次搜索不生效
     for i in range(5):
         if i == 0:
             control.activate()
@@ -719,7 +738,7 @@ def absorption_action():
             control.tap("d")
         else:
             logger("发现声骸 向前移动")
-            for i in range(4):
+            for i in range(3):
                 forward()
                 time.sleep(0.1)
         if absorption_and_receive_rewards({}):
@@ -872,9 +891,13 @@ def wait_text_designated_area(
     max_attempts: int = 3,
 ):
     start = datetime.now()
+    # Debug
+    # print("\nparam为：" + str(timeout))
     if isinstance(targets, str):
         targets = [targets]
-
+    # Debug
+    # print("\ntargets为：")
+    # print(targets)
     attempt_count = 0
     while attempt_count < max_attempts:
         now = datetime.now()
@@ -1097,11 +1120,11 @@ def set_region(
 
 
 def echo_bag_lock():
-    is_echo_ebug = False  # Debug打印开关
+    is_echo_debug = True  # Debug打印开关
     adapts()
     """
     声骸锁定
-    param is_echo_ebug 用于声骸识别过程Debug
+    param is_echo_debug 用于声骸识别过程Debug
     """
     # 开始执行判断
     if not config.EchoLock:
@@ -1180,10 +1203,11 @@ def echo_bag_lock():
         if info.echoIsLockQuantity > config.EchoMaxContinuousLockQuantity:
             logger(
                 f"连续检出已锁定声骸{info.echoIsLockQuantity}个，超出设定值，结束",
-                "DEBUG",
+                "DEBUG"
             )
             logger(
-                f"本次总共检查{info.echoNumber}个声骸，有{info.inSpecEchoQuantity}符合条件并锁定！！"
+                f"本次总共检查{info.echoNumber}个声骸，有{info.inSpecEchoQuantity}符合条件并锁定",
+                "DEBUG"
             )
             return False
         echo_next_row(info.echoNumber)
@@ -1251,7 +1275,8 @@ def echo_bag_lock():
                 time.sleep(0.02)
             time.sleep(0.8)
             random_click(1510, 690)
-    region = set_region(1425, 425, 1620, 470)
+    #region = set_region(1425, 425, 1620, 470) 鸣潮版本1.2-声骸背包ui更改导致region适配失效
+    region = set_region(1380, 420, 1590, 470)
     cost_mapping = {
         "1": (echo.echoCost1MainStatus, 1),
         "3": (echo.echoCost3MainStatus, 1),
@@ -1259,12 +1284,12 @@ def echo_bag_lock():
     }
     func, param = cost_mapping[this_echo_cost]
     text_result = wait_text_designated_area(func, param, region, 3)
-    if is_echo_ebug:
+    if is_echo_debug:
         print(
-            "\n wait_text_designated_area(0)" + str(text_result)
+            "\n Tag = wait_text_designated_area(0)" + "文本识别内容为：" + str(text_result)
         )  # 主词条识别失败Debug使用
     this_echo_main_status = wait_text_result_search(text_result)
-    if is_echo_ebug:
+    if is_echo_debug:
         print(
             "\n wait_text_result_search(text_result)(1)" + str(this_echo_main_status)
         )  # 主词条识别失败Debug使用
@@ -1273,7 +1298,7 @@ def echo_bag_lock():
         text_result = wait_text_designated_area(
             {"灭伤害加成", "射伤害加成"}, 1, region, 3
         )
-        if is_echo_ebug:
+        if is_echo_debug:
             print(
                 "\n wait_text_designated_area(2)" + str(text_result)
             )  # 主词条识别失败Debug使用
@@ -1283,7 +1308,7 @@ def echo_bag_lock():
             this_echo_main_status = "衍射伤害加成"
         # elif text_result.text == "...":
         #     this_echo_main_status = "..."
-    if is_echo_ebug:
+    if is_echo_debug:
         print(
             "\n this_echo_main_status(3)" + str(this_echo_main_status)
         )  # 主词条识别失败Debug使用
@@ -1465,21 +1490,15 @@ def remove_non_chinese(text):
 
 
 def echo_synthesis():
-    """
-    : 声骸合成锁定功能
-    : update: 2024/06/26 16:16:00
-    : author: RoseRin0
-    """
+
     is_synthesis_debug = False  # Debug打印开关
 
     def check_echo_cost():
         this_synthesis_echo_cost = None
         cost_img = screenshot()
         if find_pic(
-            1090,
-            210,
-            1240,
-            295,
+            1000,220,
+            1280,320,
             f"合成_COST1{info.adaptsResolution}.png",
             0.98,
             cost_img,
@@ -1487,77 +1506,60 @@ def echo_synthesis():
         ):
             this_synthesis_echo_cost = "1"
         if find_pic(
-            1075,
-            195,
-            1240,
-            295,
+            1000,220,
+            1280,320,
             f"合成_COST3{info.adaptsResolution}.png",
             0.98,
             cost_img,
             False,
         ):
             this_synthesis_echo_cost = "3"
-        if find_pic(
-            1075,
-            195,
-            1240,
-            295,
-            f"合成_COST4{info.adaptsResolution}.png",
-            0.98,
-            cost_img,
-            False,
-        ):
-            this_synthesis_echo_cost = "4"
+        # if find_pic(
+        #     1000,220,
+        #     1280,320,
+        #     f"合成_COST4{info.adaptsResolution}.png",
+        #     0.95,
+        #     cost_img,
+        #     False,
+        # ):
+        #     this_synthesis_echo_cost = "4"
         if this_synthesis_echo_cost is None:
             logger("未能识别到Cost", "ERROR")
             raise Exception(
-                "Cost识别失败，请检查是否使用推荐分辨率：\n  1920*1080分辨率1.0缩放\n  1600*900分辨率1.0缩放\n  1368*768分辨率1.0缩放\n  1280*720分辨率1.5缩放\n  1280*720分辨率1.0缩放"
+                "Cost识别失败，请检查是否使用推荐分辨率"
             )
-            # 识别失败返回false将抛出TypeError，在此处提醒使用适配完善的分辨率(ArcS17)
+            # 识别失败返回false抛出
         if config.EchoSynthesisDebugMode:
             logger(f"当前声骸Cost为{this_synthesis_echo_cost}", "DEBUG")
         return this_synthesis_echo_cost
 
     def check_echo_main_status(this_synthesis_echo_cost):
-        if this_synthesis_echo_cost == "4":  # 4COST描述太长，可能将副词条识别为主词条
-            random_click(1000, 685)
-            time.sleep(0.02)
-            if (
-                find_pic(
-                    715,
-                    480,
-                    770,
-                    530,
-                    f"声骸_攻击{info.adaptsResolution}.png",
-                    0.7,
-                    need_resize=False,
-                )
-                is None
-            ):
-                for i in range(18):
-                    control.scroll(1, 1000 * width_ratio, 685 * height_ratio)
-                    time.sleep(0.02)
-                time.sleep(0.8)
-                random_click(1000, 685)
-        region = set_region(830, 440, 1250, 485)
+        # 声骸合成无Cost4无需特殊识别
+        region = set_region(760, 420, 1130, 500 )
         cost_mapping = {
             "1": (echo.echoCost1MainStatus, 1),
             "3": (echo.echoCost3MainStatus, 1),
             "4": (echo.echoCost4MainStatus, 1),
         }
+
+        
         if this_synthesis_echo_cost in cost_mapping:
             func, param = cost_mapping[this_synthesis_echo_cost]
-            text_result = wait_text_designated_area(func, param, region, 3)
             if is_synthesis_debug:
                 print(
-                    "\n wait_text_designated_area(0)" + str(text_result)
+                        "\n func,param tag(0)" + str(func) + str(param)
+                    )  # 主词条识别失败Debug使用
+            text_result = wait_text_designated_area(func, param, region, 5)
+            if is_synthesis_debug:
+                print(
+                    "\n wait_text_designated_area tag(0)" + str(text_result)
                 )  # 主词条识别失败Debug使用
             this_synthesis_echo_main_status = wait_text_result_search(text_result)
             if is_synthesis_debug:
                 print(
-                    "\n wait_text_result_search(text_result)(1)"
+                    "\n wait_text_result_search(text_result) tag(1)"
                     + str(this_synthesis_echo_main_status)
-                )  # 主词条识别失败Debug使用
+                )  # 主词条识别失败Debug使用          
             # 增加对衍射伤害及湮灭伤害的识别容错
             if this_synthesis_echo_main_status is False:
                 text_result = wait_text_designated_area(
@@ -1565,15 +1567,15 @@ def echo_synthesis():
                 )
                 if is_synthesis_debug:
                     print(
-                        "\n wait_text_designated_area(2)" + str(text_result)
+                        "\n wait_text_designated_area tag(2)" + str(text_result)
                     )  # 主词条识别失败Debug使用
-                if text_result.text == "灭伤害加成":
+                if text_result != None and text_result.text == "灭伤害加成":
                     this_synthesis_echo_main_status = "湮灭伤害加成"
-                elif text_result.text == "行射伤害加成":
+                elif text_result != None and text_result.text == "行射伤害加成":
                     this_synthesis_echo_main_status = "衍射伤害加成"
                 if is_synthesis_debug:
                     print(
-                        "\n this_echo_main_status(3)"
+                        "\n this_echo_main_status tag(3)"
                         + str(this_synthesis_echo_main_status)
                     )  # 主词条识别失败Debug使用
             this_synthesis_echo_main_status = remove_non_chinese(
@@ -1742,7 +1744,6 @@ def echo_synthesis():
     purple = (255, 172, 255)
     gold = (255, 239, 171)
     results = []
-    # print(results) # Debug使用
     img = screenshot()
     for point in check_point_list:
         result = contrast_colors(point, purple, 0.85, False, img)
@@ -1751,7 +1752,6 @@ def echo_synthesis():
     for point in check_point_list:
         result = contrast_colors(point, gold, 0.85, False, img)
         results.append(result)
-    # print(results) # Debug用(AcS17)
     if results[0] or results[0 + purple_length]:
         if results[3] is False and results[3 + purple_length] is False:
             if config.EchoSynthesisDebugMode:
@@ -1794,7 +1794,7 @@ def echo_synthesis():
             )
         check_synthesis_echo_level_and_quantity(3, results, click_point_list)
     else:
-        logger("声骸识别出现问题(2)", "ERROR")
+        logger("声骸识别出现问题tag(2)", "ERROR")
         logger(
             "\n合成结果识别失败，请检查是否使用推荐分辨率：\n  1920*1080分辨率1.0缩放\n  1600*900分辨率1.0缩放\n  1368*768分辨率1.0缩放\n  1280*720分辨率1.5缩放\n  1280*720分辨率1.0缩放",
             "WARN",
@@ -1841,6 +1841,7 @@ def find_pic(
     region = None
     if None not in (x_upper_left, y_upper_left, x_lower_right, y_lower_right):
         region = set_region(x_upper_left, y_upper_left, x_lower_right, y_lower_right)
+        #print("\nregion: " + str(region))
     template = Image.open(os.path.join(root_path, "template", template_name))
     template = np.array(template)
     result = match_template(img, template, region, threshold, need_resize)

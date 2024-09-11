@@ -33,6 +33,8 @@ class StatusInfo(BaseModel):
     bossIndex: int = Field(0, title="boss索引")
     status: Status = Field(Status.idle, title="状态")
     fightTime: datetime = Field(datetime.now(), title="战斗开始时间")
+    routineBeginTime: datetime = Field(datetime.now(), title="轮次开始时间")
+    routineEndTime: datetime = Field(datetime.now(), title="轮次结束时间")
     fightCount: int = Field(battle_count, title="战斗次数")
     absorptionCount: int = Field(absorb_count, title="吸收次数")
     absorptionSuccess: bool = Field(False, title="吸收成功")

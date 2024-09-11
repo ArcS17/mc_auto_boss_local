@@ -100,6 +100,7 @@ def match_template(
         template_img = cv2.resize(template_img, (0, 0), fx=width_ratio, fy=height_ratio)
     res = cv2.matchTemplate(cropped_img, template_img, cv2.TM_CCOEFF_NORMED)
     confidence = np.max(res)
+    #print("confidence" + str(confidence))
     if confidence < threshold:
         return None
     max_loc = np.where(res == confidence)
