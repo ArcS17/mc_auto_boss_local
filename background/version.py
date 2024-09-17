@@ -1,6 +1,14 @@
-__version__ = "1.2.6"
-release_date = "2024-09-8"
+__version__ = "1.2.7"
+release_date = "2024-09-17"
 description = "更新"
+
+# ver1.2.7
+# update:2024-09-17
+# updated by ArcS17
+# 1.修复世界Boss模型切换问题
+# 2.完善轮次用时统计逻辑
+# 3.修复依赖版本问题
+# 4.修复Boss等待时间问题
 
 # ver1.2.6
 # update:2024-09-08

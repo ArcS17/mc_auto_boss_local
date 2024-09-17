@@ -157,8 +157,6 @@ def start_challenge_action(positions: dict[str, Position]) -> bool:
     click_position(position)
     time.sleep(0.5)
     info.lastFightTime = datetime.now()
-    if info.fightCount <= 1:
-        info.routineBeginTime = datetime.now()
     return True
 
 
@@ -221,16 +219,16 @@ def confirm_leave_action(positions: dict[str, Position]) -> bool:
     click_position(positions["确认"])
     time.sleep(3)
     wait_home()
-    now = datetime.now()
-    info.routineEndTime = now
-    costTime = info.routineEndTime - info.routineBeginTime
-    info.routineBeginTime = info.routineEndTime
-    #timedelta格式化
-    hours, remainder = divmod(costTime.total_seconds(), 3600)
-    minutes, seconds = divmod(remainder, 60)
-    formatted_costTime = f'{int(minutes):02}分{int(seconds):02}秒'
-    logger(f"{info.lastBossName}副本结束，本轮耗时{formatted_costTime}"
-           ,"DEBUG")
+    # #轮次耗时统计
+    # now = datetime.now()
+    # info.roundEndTime = now
+    # costTime = info.roundEndTime - info.roundBeginTime
+    # info.roundBeginTime = info.roundEndTime
+    # #timedelta格式化
+    # hours, remainder = divmod(costTime.total_seconds(), 3600)
+    # minutes, seconds = divmod(remainder, 60)
+    # formatted_costTime = f'{int(minutes):02}分{int(seconds):02}秒'
+    logger(f"{info.lastBossName}副本结束","DEBUG")
     time.sleep(2)
     if info.lastBossName == "角":
         info.inJue = False

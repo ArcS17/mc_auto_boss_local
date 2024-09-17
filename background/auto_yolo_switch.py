@@ -3,7 +3,7 @@ from status import logger
 from config import config
 from yolo import switch_model
 
-default_yolo_logger = "使用【默认YOLO】模型进行识别"  # 默认模型的log日志
+default_yolo_logger = "使用默认YOLO模型进行识别"  # 默认模型的log日志
 ModelName_ext = ".onnx"  # 模型文件的后缀名
 
 # 模型文件名称
@@ -46,18 +46,18 @@ def model_boss_yolo(bossName: str):
     #  todo...待训练其他的BOSS
 
     # utils.py 222行调用当前方法
-    elif (
-            bossName == "鸣钟之龟"
-            or bossName == "无冠者"
-            or bossName == "朔雷之鳞"
-            or bossName == "云闪之鳞"
-            or bossName == "燎照之骑"
-            or bossName == "飞廉之猩"
-            or bossName == "袁声鸷"
-            or bossName == "无常凶鹭"
-            or bossName == "辉萤军势"
-            or bossName == "聚械机偶"
-    ) and config.ModelName != defaultModelName:
+    elif(
+        bossName == "鸣钟之龟"
+        or bossName == "无冠者"
+        or bossName == "朔雷之鳞"
+        or bossName == "云闪之鳞"
+        or bossName == "燎照之骑"
+        or bossName == "飞廉之猩"
+        or bossName == "哀声鸷"
+        or bossName == "无常凶鹭"
+        or bossName == "辉萤军势"
+        or bossName == "聚械机偶"):
+        #logger("使用[默认]YOLO模型:yolo.onnx")
         user_default_model()  # 其他Boss，使用默认的yolo模型
 
 

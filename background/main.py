@@ -66,7 +66,7 @@ def find_game_windows(e: Event):
             time.sleep(15)
             e.clear()  # 清理BOSS脚本线程(防止多次重启线程占用-导致无法点击进入游戏)
             logger("自动启动BOSS脚本")
-            # 增加重启线程延时避免重启游戏加载过程中仍无法截取游戏窗口(ArcS17)
+            # 增加重启线程延时避免重启游戏加载过程中仍无法截取游戏窗口
             time.sleep(10)
             thread = Process(target=run, args=(boss_task, e), name="task")
             thread.start()
@@ -147,7 +147,7 @@ def set_console_title(title: str):
 
 
 set_console_title(
-    f"鸣潮自动工具ver {version.__version__}   --by ArcS17"
+    f"鸣潮自动工具ver {version.__version__} --by ArcS17"
 )
 
 
@@ -318,12 +318,12 @@ if __name__ == "__main__":
         logger("未找到游戏路径", "WARN")
     logger("应用重启进程启动")
     logger("")
-    logger(f"version: {version.__version__}--by ArcS17")
+    logger(f"version: {version.__version__} --by ArcS17")
     logger("鼠标重置进程启动")
     print(
-        "\n --------------------------------------------------------------------------"
-        "\n     注：此脚本为免费开源软件，如果你是通过购买获得，及时要求退款\n "
-        "--------------------------------------------------------------------------\n"
+        "\n ----------------------------------------------------------------------------------------"
+        "\n             注：此脚本为免费开源软件，如果你是通过购买获得，请立即要求退款\n "
+        "----------------------------------------------------------------------------------------\n"
     )
     print("请确认已经配置好了config.yaml文件\n")
     print(

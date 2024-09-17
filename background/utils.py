@@ -100,6 +100,7 @@ def select_role(reset_role: bool = False):
 def release_skills():
     adapts()
     if info.waitBoss:
+        roundcosttime()
         boss_wait(info.lastBossName)
     select_role(info.resetRole)
     control.mouse_middle()
@@ -283,6 +284,7 @@ def forward():
 
 
 def transfer_to_boss(bossName):
+    from auto_yolo_switch import model_boss_yolo #为了前往普通boss也进行模型切换进行的临时调用
     coordinate = find_pic(template_name=f"残象探寻.png", threshold=0.5)
     if not coordinate:
         logger("识别残像探寻失败", "WARN")
@@ -293,7 +295,8 @@ def transfer_to_boss(bossName):
         logger("未进入残象探寻", "WARN")
         control.esc()
         return False
-    logger(f"当前目标boss：{bossName}")
+    logger(f"当前目标Boss：{bossName}")
+    model_boss_yolo(bossName)
     findBoss = None
     y = 133
     while y < 907:
@@ -307,60 +310,83 @@ def transfer_to_boss(bossName):
         time.sleep(0.3)
     if not findBoss:
         control.esc()
-        logger("未找到目标boss", "WARN")
+        logger("未找到目标Boss", "WARN")
         return False
     click_position(findBoss.position)
     click_position(findBoss.position)
     time.sleep(1)
     random_click(1700, 980)
-    if bossName == "角":
-        if transfer := wait_text("快速旅行", timeout=3):
-            logger("当前目标能够快速旅行", "INFO")
-            click_position(transfer.position)
-            time.sleep(0.5)
-            logger("等待传送完成")
-            time.sleep(0.5)
-            wait_home()  # 等待回到主界面
-            time.sleep(0.5)
-            logger("传送完成")
-            now = datetime.now()
-            info.idleTime = now  # 重置空闲时间
-            info.lastFightTime = now  # 重置最近检测到战斗时间
-            info.fightTime = now  # 重置战斗时间
-            info.waitBoss = True
-            for i in range(5):
-                forward()
-                time.sleep(0.1)
-            time.sleep(1)
-            return True
-        else:
-            logger("未找到快速旅行", "WARN")
-            control.esc()
-            return False
-    else:
-        if not wait_text("追踪", timeout=3):
-            logger("未找到追踪", "WARN")
-            control.esc()
-            return False
-        random_click(960, 540)
-        beacon = wait_text("借位信标", timeout=3)
-        if not beacon:
-            logger("未找到借位信标", "WARN")
-            control.esc()
-            return False
-        click_position(beacon.position)
-        if transfer := wait_text("快速旅行", timeout=5):
-            click_position(transfer.position)
-            time.sleep(0.5)
-            logger("等待传送完成")
-            wait_home()  # 等待回到主界面
-            logger("传送完成")
-            now = datetime.now()
-            info.idleTime = now  # 重置空闲时间
-            info.lastFightTime = now  # 重置最近检测到战斗时间
-            info.fightTime = now  # 重置战斗时间
-            info.waitBoss = True
-            return True
+    if not wait_text("追踪", timeout=3):
+        logger("未找到追踪", "WARN")
+        control.esc()
+        return False
+    random_click(960, 540)
+    beacon = wait_text("借位信标", timeout=3)
+    if not beacon:
+        logger("未找到借位信标", "WARN")
+        control.esc()
+        return False
+    click_position(beacon.position)
+    if transfer := wait_text("快速旅行", timeout=5):
+        click_position(transfer.position)
+        time.sleep(0.5)
+        logger("等待传送完成")
+        wait_home()  # 等待回到主界面
+        logger("传送完成")
+        now = datetime.now()
+        info.idleTime = now  # 重置空闲时间
+        info.lastFightTime = now  # 重置最近检测到战斗时间
+        info.fightTime = now  # 重置战斗时间
+        info.waitBoss = True
+        return True
+    control.esc()
+    return False
+
+def transfer_to_jue():
+    coordinate = find_pic(template_name="周期挑战.png", threshold=0.5)
+    if not coordinate:
+        logger("识别周期挑战失败", "WARN")
+        control.esc()
+        return False
+    click_position(coordinate)  # 进入周期挑战
+    if not wait_text("前往"):
+        logger("未进入周期挑战", "WARN")
+        control.esc()
+        return False
+    logger(f"当前目标Boss：角")
+    time.sleep(2)
+    findWeeklyBoss = find_text("战歌")
+    if not findWeeklyBoss:
+        control.esc()
+        logger("未找到战歌重奏")
+        return False
+    click_position(findWeeklyBoss.position)
+    click_position(findWeeklyBoss.position)
+    time.sleep(1)
+    random_click(1730, 620)
+    random_click(1730, 620)
+    time.sleep(0.5)
+    # control.click(1720 * width_ratio, 420 * height_ratio)
+    if transfer := wait_text("快速旅行"):
+        click_position(transfer.position)
+        logger("等待传送完成")
+        time.sleep(0.5)
+        #logger("等待回到主界面")
+        wait_home()  # 等待回到主界面
+        time.sleep(1)
+        logger("传送完成")
+        #logger("此处本应向前进本")
+        for _ in range(4):
+            forward()
+            time.sleep(0.1)
+        time.sleep(1)
+        now = datetime.now()
+        info.idleTime = now  # 重置空闲时间
+        info.lastFightTime = now  # 重置最近检测到战斗时间
+        info.fightTime = now  # 重置战斗时间
+        time.sleep(1)
+        return True
+    logger("未找到快速旅行", "WARN")
     control.esc()
     return False
 
@@ -376,17 +402,18 @@ def transfer_to_dreamless():
         logger("未进入周期挑战", "WARN")
         control.esc()
         return False
-    logger(f"当前目标boss：无妄者")
+    logger(f"当前目标Boss：无妄者")
     time.sleep(2)
-    findBoss = find_text("战歌")
-    if not findBoss:
+    findWeeklyBoss = find_text("战歌")
+    if not findWeeklyBoss:
         control.esc()
         logger("未找到战歌重奏")
         return False
-    click_position(findBoss.position)
-    click_position(findBoss.position)
+    click_position(findWeeklyBoss.position)
+    click_position(findWeeklyBoss.position)
     time.sleep(1)
-    random_click(1720, 460)
+    random_click(1730, 470)
+    time.sleep(0.8)
     # control.click(1720 * width_ratio, 420 * height_ratio)
     if transfer := wait_text("快速旅行"):
         click_position(transfer.position)
@@ -415,7 +442,7 @@ def transfer() -> bool:
         if not info.needHeal:  # 检查是否需要治疗
             logger("无需治疗")
         else:
-            # healBossName = "朔雷之鳞"  # 固定目标boss名称
+            # healBossName = "朔雷之鳞"  # 固定目标Boss名称
             logger("开始治疗")
             time.sleep(1)
             info.lastBossName = "治疗"
@@ -461,9 +488,28 @@ def transfer() -> bool:
     elif bossName == "无妄者":
         info.bossIndex += 1
         return transfer_to_dreamless()
+    elif bossName == "角":
+        info.bossIndex += 1
+        return transfer_to_jue()
     else:
+        info.lastBossName = "" #前往非副本boss lastBossName置空
         info.bossIndex += 1
         return transfer_to_boss(bossName)
+    
+def roundcosttime(): #轮次耗时统计
+    if info.fightCount == 1:
+        info.roundBeginTime = datetime.now()
+    else:
+        now = datetime.now()
+        info.roundEndTime = now
+        costTime = info.roundEndTime - info.roundBeginTime
+        info.roundBeginTime = info.roundEndTime
+        #timedelta格式化
+        hours, remainder = divmod(costTime.total_seconds(), 3600)
+        minutes, seconds = divmod(remainder, 60)
+        formatted_costTime = f'{int(minutes):02}分{int(seconds):02}秒'
+        logger(f"本轮耗时{formatted_costTime}"
+               ,"DEBUG")
 
 
 def screenshot() -> np.ndarray | None:
@@ -840,7 +886,7 @@ def transfer_to_heal(healBossName: str = "朔雷之鳞"):
             control.scroll(3, 960 * width_ratio, 540 * height_ratio)
             time.sleep(0.2)
             logger("正在对地图进行缩放","DEBUG")
-        time.sleep(0.5)  
+        time.sleep(0.5)
     # control.click(1210 * width_ratio, 525 * height_ratio)
     random_click(1210, 525)
     if transfer := wait_text("快速旅行"):
@@ -863,7 +909,7 @@ def transfer_to_heal(healBossName: str = "朔雷之鳞"):
 def check_heal():
     if info.checkHeal:
         logger(f"正在检查角色是否需要复苏。")
-        for i in range(3):
+        for _ in range(3):
             if info.needHeal:
                 break
             now = datetime.now()
@@ -876,7 +922,7 @@ def check_heal():
             if not wait_text_designated_area("复苏", timeout=3, region=region):
                 logger(f"{info.roleIndex}号角色无需复苏")
                 info.needHeal = False
-                time.sleep(1)
+                time.sleep(0.5)
             else:
                 logger(f"{info.roleIndex}号角色需要复苏")
                 info.needHeal = True
@@ -1156,7 +1202,7 @@ def echo_bag_lock():
         time.sleep(3)
         # 切换到时间顺序(倒序)
         logger("切换为时间倒序")
-        random_click(400, 990)  # 调整点击位置以适配窗口模式下的1920*1080分辨率(ArcS17)
+        random_click(400, 990)  # 调整点击位置以适配窗口模式下的1920*1080分辨率
         time.sleep(1)
         random_click(400, 860)
         time.sleep(0.5)
@@ -1717,7 +1763,7 @@ def echo_synthesis():
         control.esc()
 
     adapts()
-    synthesis_wait_time = 3
+    synthesis_wait_time = 2.7
     if config.EchoSynthesisDebugMode:
         logger(f"等待合成中{synthesis_wait_time}", "DEBUG")
     time.sleep(synthesis_wait_time)
@@ -1799,7 +1845,7 @@ def echo_synthesis():
             "\n合成结果识别失败，请检查是否使用推荐分辨率：\n  1920*1080分辨率1.0缩放\n  1600*900分辨率1.0缩放\n  1368*768分辨率1.0缩放\n  1280*720分辨率1.5缩放\n  1280*720分辨率1.0缩放",
             "WARN",
         )
-        # 此处提醒使用适配完善的分辨率(ArcS17)
+        # 此处提醒使用适配完善的分辨率
         return False
 
 
@@ -1863,7 +1909,7 @@ def adapts():
             logger("分辨率正确，使用适配坐标")
             info.adaptsType = 2
             info.adaptsResolution = "_1600_900"
-        # elif 1430 <= real_w <= 1450 and 890 <= real_h <= 910: # template比例实际与1600*900相同但region需要重设(ArcS17)
+        # elif 1430 <= real_w <= 1450 and 890 <= real_h <= 910: # template比例实际与1600*900相同但region需要重设
         #     logger("分辨率正确，使用通用坐标")
         #     info.adaptsType = 2
         #     info.adaptsResolution = "_1600_900"
