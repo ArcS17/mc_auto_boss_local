@@ -2,6 +2,16 @@ __version__ = "1.2.7"
 release_date = "2024-09-17"
 description = "更新"
 
+# ver1.3.0
+# update:2024-10-8
+# updated by ArcS17
+# 0.鸣潮1.3版本相关适配
+# 1.修复背包声骸锁定筛选
+# 2.支持周本Boss快速重新挑战
+# 3.支持新世界Boss无归的谬误
+# 4.优化Boss传送ocr范围
+# 5.todo:批量声骸合成锁定(实在懒得做)
+
 # ver1.2.7
 # update:2024-09-17
 # updated by ArcS17

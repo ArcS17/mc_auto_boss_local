@@ -66,7 +66,7 @@ class ImageMatch(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
-
+        
 
 def match_template(
     img: np.ndarray,

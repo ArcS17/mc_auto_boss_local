@@ -91,22 +91,22 @@ def recommended_level_action(positions: dict[str, Position]) -> bool:
     :return:
     """
     interactive()
-    if info.DungeonWeeklyBossLevel != 0:
-        dungeon_weekly_boss_level = (
-            info.DungeonWeeklyBossLevel
-        )  # 如果已有自动搜索结果，那么直接使用自动搜索的结果值
-    elif (
-        config.DungeonWeeklyBossLevel is None
-        or config.DungeonWeeklyBossLevel < 40
-        or config.DungeonWeeklyBossLevel % 10 != 0
-    ):
-        dungeon_weekly_boss_level = (
-            40  # 如果没有自动搜索的结果，且没有Config值或为值异常，则从40开始判断
-        )
-    else:
-        dungeon_weekly_boss_level = (
-            config.DungeonWeeklyBossLevel
-        )  # 如果没有自动搜索的结果，但有Config值且不为默认值，则使用Config值
+    # if info.DungeonWeeklyBossLevel != 0:
+    #     dungeon_weekly_boss_level = (
+    #         info.DungeonWeeklyBossLevel
+    #     )  # 如果已有自动搜索结果，那么直接使用自动搜索的结果值
+    # elif (
+    #     config.DungeonWeeklyBossLevel is None
+    #     or config.DungeonWeeklyBossLevel < 40
+    #     or config.DungeonWeeklyBossLevel % 10 != 0
+    # ):
+    #     dungeon_weekly_boss_level = (
+    #         40  # 如果没有自动搜索的结果，且没有Config值或为值异常，则从40开始判断
+    #     )
+    # else:
+    dungeon_weekly_boss_level = (
+        config.DungeonWeeklyBossLevel
+    )  # 如果没有自动搜索的结果，但有Config值且不为默认值，则使用Config值
     result = wait_text("推荐等级" + str(dungeon_weekly_boss_level))
     if not result:
         for i in range(1, 3):
@@ -120,7 +120,7 @@ def recommended_level_action(positions: dict[str, Position]) -> bool:
         return False
     for i in range(3):
         click_position(result.position)
-        time.sleep(0.5)
+        time.sleep(0.3)
     result = find_text("单人挑战")
     if not result:
         control.esc()
@@ -216,27 +216,34 @@ def confirm_leave_action(positions: dict[str, Position]) -> bool:
     :param positions: 位置信息
     :return:
     """
-    click_position(positions["确认"])
-    time.sleep(3)
-    wait_home()
-    # #轮次耗时统计
-    # now = datetime.now()
-    # info.roundEndTime = now
-    # costTime = info.roundEndTime - info.roundBeginTime
-    # info.roundBeginTime = info.roundEndTime
-    # #timedelta格式化
-    # hours, remainder = divmod(costTime.total_seconds(), 3600)
-    # minutes, seconds = divmod(remainder, 60)
-    # formatted_costTime = f'{int(minutes):02}分{int(seconds):02}秒'
-    logger(f"{info.lastBossName}副本结束","DEBUG")
-    time.sleep(2)
-    if info.lastBossName == "角":
-        info.inJue = False
+    if not config.Loop_Boss:
+        click_position(positions["确认"])
+        time.sleep(3)
+        wait_home()
+        logger(f"{info.lastBossName}副本结束","DEBUG")
+        time.sleep(2)
+        if info.lastBossName == "角":
+            info.inJue = False
+        else:
+            info.inDreamless = False
+        info.status = Status.idle
+        now = datetime.now()
+        info.lastFightTime = now + timedelta(seconds=config.MaxFightTime / 2)
     else:
-        info.inDreamless = False
-    info.status = Status.idle
-    now = datetime.now()
-    info.lastFightTime = now + timedelta(seconds=config.MaxFightTime / 2)
+        bossName = config.TargetBoss[info.bossIndex % len(config.TargetBoss)]
+        if bossName == "角":
+            info.lastBossName = "角"
+            info.inJue = True
+        elif bossName == "无妄者":
+            info.lastBossName = "无妄者"
+            info.inDreamless = True
+        click_position(wait_text("重新挑战").position)
+        time.sleep(2)
+        logger(f"重新挑战：周本Boss [{info.lastBossName}]","DEBUG")
+        info.status = Status.idle
+        now = datetime.now()
+        info.lastFightTime = now + timedelta(seconds=config.MaxFightTime / 2)
+        info.waitBoss = True
     return True
 
 

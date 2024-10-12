@@ -290,12 +290,12 @@ def transfer_to_boss(bossName):
         logger("识别残像探寻失败", "WARN")
         control.esc()
         return False
-    click_position(coordinate)  # 进入残像探寻
+    click_position(coordinate)  # 进入残像探寻当前目标Boss
     if not wait_text("探测"):
         logger("未进入残象探寻", "WARN")
         control.esc()
         return False
-    logger(f"当前目标Boss：{bossName}")
+    logger(f"当前目标Boss：{bossName}", "WARN")
     model_boss_yolo(bossName)
     findBoss = None
     y = 133
@@ -316,7 +316,9 @@ def transfer_to_boss(bossName):
     click_position(findBoss.position)
     time.sleep(1)
     random_click(1700, 980)
-    if not wait_text("追踪", timeout=3):
+    time.sleep(1)
+    region = set_region(1280,495, 1920,1080)
+    if not wait_text_designated_area("追踪", 3, region, 10):
         logger("未找到追踪", "WARN")
         control.esc()
         return False
@@ -329,7 +331,7 @@ def transfer_to_boss(bossName):
     click_position(beacon.position)
     if transfer := wait_text("快速旅行", timeout=5):
         click_position(transfer.position)
-        time.sleep(0.5)
+        time.sleep(1.0)
         logger("等待传送完成")
         wait_home()  # 等待回到主界面
         logger("传送完成")
@@ -353,7 +355,7 @@ def transfer_to_jue():
         logger("未进入周期挑战", "WARN")
         control.esc()
         return False
-    logger(f"当前目标Boss：角")
+    logger(f"当前目标Boss：角", "WARN")
     time.sleep(2)
     findWeeklyBoss = find_text("战歌")
     if not findWeeklyBoss:
@@ -370,20 +372,19 @@ def transfer_to_jue():
     if transfer := wait_text("快速旅行"):
         click_position(transfer.position)
         logger("等待传送完成")
-        time.sleep(0.5)
+        time.sleep(1.5)
         #logger("等待回到主界面")
         wait_home()  # 等待回到主界面
-        time.sleep(1)
         logger("传送完成")
         #logger("此处本应向前进本")
-        for _ in range(4):
-            forward()
-            time.sleep(0.1)
-        time.sleep(1)
         now = datetime.now()
         info.idleTime = now  # 重置空闲时间
         info.lastFightTime = now  # 重置最近检测到战斗时间
         info.fightTime = now  # 重置战斗时间
+        time.sleep(1)
+        for _ in range(4):
+            forward()
+            time.sleep(0.2)
         time.sleep(1)
         return True
     logger("未找到快速旅行", "WARN")
@@ -402,7 +403,7 @@ def transfer_to_dreamless():
         logger("未进入周期挑战", "WARN")
         control.esc()
         return False
-    logger(f"当前目标Boss：无妄者")
+    logger(f"当前目标Boss：无妄者", "WARN")
     time.sleep(2)
     findWeeklyBoss = find_text("战歌")
     if not findWeeklyBoss:
@@ -418,16 +419,16 @@ def transfer_to_dreamless():
     if transfer := wait_text("快速旅行"):
         click_position(transfer.position)
         logger("等待传送完成")
-        time.sleep(0.5)
+        time.sleep(1.0)
         wait_home()  # 等待回到主界面
         logger("传送完成")
-        time.sleep(2)
+        time.sleep(1)
         now = datetime.now()
         info.idleTime = now  # 重置空闲时间
         info.lastFightTime = now  # 重置最近检测到战斗时间
         info.fightTime = now  # 重置战斗时间
         time.sleep(1)
-        for i in range(5):
+        for _ in range(5):
             forward()
             time.sleep(0.1)
         return True
@@ -453,7 +454,7 @@ def transfer() -> bool:
     bossName = config.TargetBoss[info.bossIndex % len(config.TargetBoss)]
 
     if info.lastBossName == "无妄者" and bossName == "无妄者":
-        logger("前往无妄者 且 刚才已经前往过")
+        logger("前往 无妄者 且刚才已经前往过")
         for i in range(15):
             forward()
             time.sleep(0.1)
@@ -464,7 +465,7 @@ def transfer() -> bool:
         info.lastBossName = ""
         return True
     if info.lastBossName == "角" and bossName == "角":
-        logger("前往角 且 刚才已经前往过")
+        logger("前往 角 且刚才已经前往过")
         control.dodge() # 闪避进本
         now = datetime.now()
         info.idleTime = now  # 重置空闲时间
@@ -732,7 +733,7 @@ def turn_to_search() -> int | None:
         if i == 0:
             control.activate()
             control.mouse_middle()  # 重置视角
-            time.sleep(1)
+            time.sleep(0.75)
         img = screenshot()
         x = search_echoes(img)
         if x is not None:
@@ -741,9 +742,9 @@ def turn_to_search() -> int | None:
             return
         logger("未发现声骸,转动视角")
         control.tap("a")
-        time.sleep(0.5)
+        time.sleep(0.25)
         control.mouse_middle()
-        time.sleep(1)
+        time.sleep(0.75)
     return x
 
 
@@ -784,7 +785,7 @@ def absorption_action():
             control.tap("d")
         else:
             logger("发现声骸 向前移动")
-            for i in range(3):
+            for _ in range(4):
                 forward()
                 time.sleep(0.1)
         if absorption_and_receive_rewards({}):
@@ -922,7 +923,7 @@ def check_heal():
             if not wait_text_designated_area("复苏", timeout=3, region=region):
                 logger(f"{info.roleIndex}号角色无需复苏")
                 info.needHeal = False
-                time.sleep(0.5)
+                time.sleep(0.8)
             else:
                 logger(f"{info.roleIndex}号角色需要复苏")
                 info.needHeal = True
@@ -1187,14 +1188,14 @@ def echo_bag_lock():
             "检测到声骸背包画面，3秒后将开始执行锁定程序，过程中请不要将鼠标移到游戏内。",
             "DEBUG",
         )
-        logger(
-            "tips:此功能需要关闭声骸详细描述(即在角色声骸装备处显示详情，在背包内显示简介)",
-            "WARN",
-        )
-        logger(
-            "步骤:点击键盘【C键】打开共鸣者，点击声骸，点击任意声骸，点击右上角简述将开关拨向左边",
-            "WARN",
-        )
+        # logger(
+        #     "tips:此功能需要关闭声骸详细描述(即在角色声骸装备处显示详情，在背包内显示简介)",
+        #     "WARN",
+        # )
+        # logger(
+        #     "步骤:点击键盘【C键】打开共鸣者，点击声骸，点击任意声骸，点击右上角简述将开关拨向左边",
+        #     "WARN",
+        # )
         logger(
             "请使用已适配分辨率：\n  1920*1080分辨率1.0缩放\n  1600*900分辨率1.0缩放\n  1368*768分辨率1.0缩放\n  1280*720分辨率1.5缩放\n  1280*720分辨率1.0缩放",
             "WARN",
@@ -1204,7 +1205,7 @@ def echo_bag_lock():
         logger("切换为时间倒序")
         random_click(400, 990)  # 调整点击位置以适配窗口模式下的1920*1080分辨率
         time.sleep(1)
-        random_click(400, 860)
+        random_click(400, 775) # 鸣潮1.3版本，筛选顺序更改
         time.sleep(0.5)
         random_click(718, 23)
         time.sleep(0.5)
@@ -1401,10 +1402,10 @@ def echo_bag_lock():
         pass
     else:
         random_click(1510, 690)
-        time.sleep(0.02)
+        time.sleep(0.05)
         for i in range(18):
             control.scroll(-1, 1510 * width_ratio, 690 * height_ratio)
-            time.sleep(0.02)
+            time.sleep(0.05)
         time.sleep(0.8)
         random_click(1510, 690)
         text_result = wait_text_designated_area(echo.echoSetName, 2, region, 5)
@@ -1416,10 +1417,10 @@ def echo_bag_lock():
 
         # 上滚恢复到主词条页面
         random_click(1510, 690)
-        time.sleep(0.02)
+        time.sleep(0.05)
         for i in range(18):
             control.scroll(1, 1510 * width_ratio, 690 * height_ratio)
-            time.sleep(0.02)
+            time.sleep(0.05)
         time.sleep(0.8)
         random_click(1510, 690)
 
@@ -2037,110 +2038,110 @@ def close_window(class_name: str = "UnrealWindow", window_title: str = "鸣潮  
     return False
 
 # 声骇得分计算
-def role_equip_points():
+# def role_equip_points():
 
-    if not config.EnhancedComputing:
-        logger("未启用该功能，请在config.yaml中更改EnhancedComputing配置", "WARN")
-        return False
+#     if not config.EnhancedComputing:
+#         logger("未启用该功能，请在config.yaml中更改EnhancedComputing配置", "WARN")
+#         return False
 
-    logger("默认按正常比例适配计算，如需计算特殊角色，请前往配置文件中配置", "WARN")
-    logger("计算需要在角色声骇详情页面进行，请确保前往顺序为 按下C -> 属性详情 -> 声骇 -> 点击右侧声骇 即可。请确保处于该页面，否则可能识别失败。","WARN")
-    time.sleep(1)
+#     logger("默认按正常比例适配计算，如需计算特殊角色，请前往配置文件中配置", "WARN")
+#     logger("计算需要在角色声骇详情页面进行，请确保前往顺序为 按下C -> 属性详情 -> 声骇 -> 点击右侧声骇 即可。请确保处于该页面，否则可能识别失败。","WARN")
+#     time.sleep(1)
 
-    logger("目前支持特殊计算角色：\n - 今汐\n - 忌炎  ")
-    role_name = config.ComputeRoleName
-    max_attempts = 10
-    retry_interval = 5
+#     logger("目前支持特殊计算角色：\n - 今汐\n - 忌炎  ")
+#     role_name = config.ComputeRoleName
+#     max_attempts = 10
+#     retry_interval = 5
 
-    logger("共进行{}次尝试，每隔{}秒进行一次识别，请在一次识别后手动选择另一个声骇".format(max_attempts, retry_interval), "DEBUG")
-    grade  = 0
-    compute_static = config.ComputeTactic
-    if len(compute_static) < 4:
-        logger("声骇计算配置错误，请检查配置文件", "ERROR")
+#     logger("共进行{}次尝试，每隔{}秒进行一次识别，请在一次识别后手动选择另一个声骇".format(max_attempts, retry_interval), "DEBUG")
+#     grade  = 0
+#     compute_static = config.ComputeTactic
+#     if len(compute_static) < 4:
+#         logger("声骇计算配置错误，请检查配置文件", "ERROR")
 
-    for attempt in range(max_attempts):
-        img = screenshot()
-        if img is None:
-            time.sleep(0.2)
-            continue
+#     for attempt in range(max_attempts):
+#         img = screenshot()
+#         if img is None:
+#             time.sleep(0.2)
+#             continue
 
-        img_entry = img[205:320, 965:1220]
-        img_pil2 = img[100:160, 930:1000]
+#         img_entry = img[205:320, 965:1220]
+#         img_pil2 = img[100:160, 930:1000]
 
-        result = ocr(img_pil2)
+#         result = ocr(img_pil2)
 
-        up = 0
-        for item in result:
-            if "+" in item.text:
-                try:
-                    up = int(item.text.split("+")[1])
-                except ValueError:
-                    up = -1
-                break
-            else:
-                up = -1
-        if up == -1:
-            logger("声骸等级识别失败，请检查识别内容", "WARN")
-            print(f"{result}")
-            return False
+#         up = 0
+#         for item in result:
+#             if "+" in item.text:
+#                 try:
+#                     up = int(item.text.split("+")[1])
+#                 except ValueError:
+#                     up = -1
+#                 break
+#             else:
+#                 up = -1
+#         if up == -1:
+#             logger("声骸等级识别失败，请检查识别内容", "WARN")
+#             print(f"{result}")
+#             return False
 
-        result = ocr(img_entry)
+#         result = ocr(img_entry)
 
-        if not result and up > 5 :
-            for _ in range(3):
-                logger("声骸识别失败，尝试重新识别", "WARN")
-                result = ocr(img_entry)
-                if result:
-                    break
+#         if not result and up > 5 :
+#             for _ in range(3):
+#                 logger("声骸识别失败，尝试重新识别", "WARN")
+#                 result = ocr(img_entry)
+#                 if result:
+#                     break
 
-            if not result:
-                print(f"{result}")
-                print(f"{up}")
-                logger(f"声骸识别失败，请检查识别内容{up},{result}", "WARN")
-                return False
-        if up < 10:
-            result = result[:2]
-            grade = 0
-        elif up < 15:
-            result = result[:4]
-            grade = 1
-        elif up < 20:
-            result = result[:6]
-            grade = 2
-        elif up < 25:
-            result = result[:8]
-            grade = 3
-        elif up == 25:
-            result = result[:10]
-            grade = -1
+#             if not result:
+#                 print(f"{result}")
+#                 print(f"{up}")
+#                 logger(f"声骸识别失败，请检查识别内容{up},{result}", "WARN")
+#                 return False
+#         if up < 10:
+#             result = result[:2]
+#             grade = 0
+#         elif up < 15:
+#             result = result[:4]
+#             grade = 1
+#         elif up < 20:
+#             result = result[:6]
+#             grade = 2
+#         elif up < 25:
+#             result = result[:8]
+#             grade = 3
+#         elif up == 25:
+#             result = result[:10]
+#             grade = -1
 
-        paired_results = []
-        for i in range(0, len(result), 2):
-            if i + 1 < len(result):
-                if "骸" in result[i].text:
-                    break  # 检测到“骸”字，结束循环
-                if "攻击" in result[i].text and "%" in result[i+1].text:
-                    paired_results.append(("大" + result[i].text, result[i+1].text))
-                else:
-                    paired_results.append((result[i].text, result[i+1].text))
-        if not paired_results and up < 5:
-            logger("当前声骸等级{up}，声骇等级过低，无法计算，请重新选择", "WARN")
-            time.sleep(retry_interval)
-            continue
+#         paired_results = []
+#         for i in range(0, len(result), 2):
+#             if i + 1 < len(result):
+#                 if "骸" in result[i].text:
+#                     break  # 检测到“骸”字，结束循环
+#                 if "攻击" in result[i].text and "%" in result[i+1].text:
+#                     paired_results.append(("大" + result[i].text, result[i+1].text))
+#                 else:
+#                     paired_results.append((result[i].text, result[i+1].text))
+#         if not paired_results and up < 5:
+#             logger("当前声骸等级{up}，声骇等级过低，无法计算，请重新选择", "WARN")
+#             time.sleep(retry_interval)
+#             continue
 
-        print("\n---------------------------------------------------------- \n")
-        total_weight, adjusted_total_weight, max_total_weight, max_adjusted_total_weight  = calculate_total_weight(paired_results, role_name)
-        print(f"当前计分模型中，伤害型角色通用最高分为228.2,特殊伤害加成提升最高分为251.4,可自行参考比对")
-        if adjusted_total_weight is not None:
-            print(f"当前声骸等级{up},角色{role_name}本套声骇上限最高分为：{max_adjusted_total_weight}，角色{role_name}计算得分为：{adjusted_total_weight}")
-        else:
-            print(f"当前声骸等级{up},本套声骇上限最高分为：{max_total_weight}，计算得分为：{total_weight}")
-        if grade != -1:
-            if role_name == "默认" or adjusted_total_weight is None:
-                print(f"当前声骇等级{up}，计算得分为：{total_weight}, 期望分为：{compute_static[grade]}，请自行确认比较")
-            else :
-                print(f"当前声骇等级{up}，计算得分为：{max_adjusted_total_weight}, 期望分为：{compute_static[grade]}，请自行确认比较")
-        print("\n----------------------------------------------------------- \n")
-        time.sleep(retry_interval)
+#         print("\n---------------------------------------------------------- \n")
+#         total_weight, adjusted_total_weight, max_total_weight, max_adjusted_total_weight  = calculate_total_weight(paired_results, role_name)
+#         print(f"当前计分模型中，伤害型角色通用最高分为228.2,特殊伤害加成提升最高分为251.4,可自行参考比对")
+#         if adjusted_total_weight is not None:
+#             print(f"当前声骸等级{up},角色{role_name}本套声骇上限最高分为：{max_adjusted_total_weight}，角色{role_name}计算得分为：{adjusted_total_weight}")
+#         else:
+#             print(f"当前声骸等级{up},本套声骇上限最高分为：{max_total_weight}，计算得分为：{total_weight}")
+#         if grade != -1:
+#             if role_name == "默认" or adjusted_total_weight is None:
+#                 print(f"当前声骇等级{up}，计算得分为：{total_weight}, 期望分为：{compute_static[grade]}，请自行确认比较")
+#             else :
+#                 print(f"当前声骇等级{up}，计算得分为：{max_adjusted_total_weight}, 期望分为：{compute_static[grade]}，请自行确认比较")
+#         print("\n----------------------------------------------------------- \n")
+#         time.sleep(retry_interval)
 
-    return False
+#     return False

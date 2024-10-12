@@ -30,6 +30,7 @@ class Control:
         )  # 鼠标左键抬起
         time.sleep(0.1)
 
+
     # 前台鼠标点击
     def click_login(self, x: int | float = 0, y: int | float = 0, specified_hwnd=None):
         current_hwnd = self.hwnd if specified_hwnd is None else specified_hwnd
@@ -44,6 +45,7 @@ class Control:
         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, pt[0], pt[1], 0, 0)
         time.sleep(0.2)
 
+
     def fight_click(self, x: int | float = 0, y: int | float = 0):
         x = x if isinstance(x, int) else int(x)
         y = y if isinstance(y, int) else int(y)
@@ -56,6 +58,7 @@ class Control:
             self.hwnd, win32con.WM_LBUTTONUP, win32con.MK_LBUTTON, long_position
         )  # 鼠标左键抬起
 
+        
     def mouse_middle(self, x: int = 0, y: int = 0):
         x = x if isinstance(x, int) else int(x)
         y = y if isinstance(y, int) else int(y)

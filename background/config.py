@@ -49,6 +49,7 @@ class Config(BaseModel):
     DungeonWeeklyBossLevel: int = Field(40, title="周本(副本)boss等级")
     BossWaitTime_Dreamless: float = Field(3, title="进入-无妄者-周本等待时间")
     BossWaitTime_Jue: float = Field(2, title="进入-角-周本等待时间")
+    Loop_Boss: bool = Field(False, title="是否单刷周本Boss")
     SearchEchoes: bool = Field(False, title="是否搜索声骸")
     SearchDreamlessEchoes: bool = Field(True, title="是否搜索无妄者")
     CharacterHeal: bool = Field(True, title="是否判断角色是否阵亡")
@@ -56,10 +57,10 @@ class Config(BaseModel):
     EchoLock: bool = Field(False, title="是否启用锁定声骸功能")
     EchoLockConfig: Dict[str, Dict[str, List[str]]] = Field(default_factory=dict)
     EnhancedComputing: bool = Field(False, title="是否启用声骇强化计分")
-    ComputeRoleName: str = Field("默认", title="声骇强化计分的角色名称")
-    ComputeTactic: List[int] = Field(
-        [0, 10, 36, 78], title="声骇每级计算策略 默认提供强化最优策略 [0, 10, 36, 78]可自行修改 第一位为5级声骇期望分值，第二位为10级，第三位为15级，第四位为20级 详细计算方法请参考 https://ngabbs.com/read.php?tid=40813747&_fu=62546171%2C1&rand=665"
-    )
+    # ComputeRoleName: str = Field("默认", title="声骇强化计分的角色名称")
+    # ComputeTactic: List[int] = Field(
+    #     [0, 10, 36, 78], title="声骇每级计算策略 默认提供强化最优策略 [0, 10, 36, 78]可自行修改 第一位为5级声骇期望分值，第二位为10级，第三位为15级，第四位为20级 详细计算方法请参考 https://ngabbs.com/read.php?tid=40813747&_fu=62546171%2C1&rand=665"
+    # )
     EchoMaxContinuousLockQuantity: int = Field(
         5, title="最大连续检测到已锁定声骸的数量"
     )

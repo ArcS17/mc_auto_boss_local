@@ -48,6 +48,7 @@ def model_boss_yolo(bossName: str):
     # utils.py 222行调用当前方法
     elif(
         bossName == "鸣钟之龟"
+        or bossName == "无归的谬误"
         or bossName == "无冠者"
         or bossName == "朔雷之鳞"
         or bossName == "云闪之鳞"
@@ -56,8 +57,7 @@ def model_boss_yolo(bossName: str):
         or bossName == "哀声鸷"
         or bossName == "无常凶鹭"
         or bossName == "辉萤军势"
-        or bossName == "聚械机偶"):
-        #logger("使用[默认]YOLO模型:yolo.onnx")
+        or bossName == "聚械机偶") and config.ModelName != defaultModelName:
         user_default_model()  # 其他Boss，使用默认的yolo模型
 
 

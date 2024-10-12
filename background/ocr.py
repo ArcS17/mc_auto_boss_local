@@ -66,4 +66,5 @@ def ocr(img: np.ndarray) -> list[OcrResult]:
         position = Position(x1=x1, y1=y1, x2=x2, y2=y2)
         confidence = result[1][1]
         res.append(OcrResult(text=text, position=position, confidence=confidence))
+    # print(f"ocr当前扫描结果{res}") # ocr debug使用
     return res
